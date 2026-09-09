@@ -1,0 +1,110 @@
+---
+overlay:
+
+  tenants:
+
+    TENANT:
+
+      l3vni:
+        vlan: 30
+        vni: 100030
+
+      vrf:
+        rd: auto
+
+        address_families:
+
+          ipv4_unicast:
+
+            route_target:
+              ipv4: auto
+              evpn: auto
+
+      vlans:
+
+        10:
+
+          name: TENANT_VLAN_10
+          vni: 100010
+          type: l2
+
+          multicast_group: 239.0.0.10
+
+          evpn:
+
+            rd: auto
+
+            route_target:
+              import: auto
+              export: auto
+
+          svi:
+
+            enabled: true
+
+            anycast_gateway: true
+
+            address: 192.168.10.254/24
+
+            route_tag: 12345
+
+            deployed_on:
+              - L-1
+              - L-2
+
+
+        20:
+
+          name: TENANT_VLAN_20
+          vni: 100020
+          type: l2
+
+          multicast_group: 239.0.0.20
+
+          evpn:
+
+            rd: auto
+
+            route_target:
+              import: auto
+              export: auto
+
+          svi:
+
+            enabled: true
+
+            anycast_gateway: true
+
+            address: 192.168.20.254/24
+
+            route_tag: 12345
+
+            deployed_on:
+              - L-2
+
+
+        30:
+
+          name: TENANT_L3VNI
+          vni: 100030
+          type: l3
+
+          multicast_group: 239.0.0.30
+
+          svi:
+
+            enabled: true
+
+            vrf: TENANT
+
+            ip_forward: true
+
+            no_ip_redirects: true
+
+            deployed_on:
+              - L-1
+              - L-2
+
+      deployed_on:
+        - L-1
+        - L-2

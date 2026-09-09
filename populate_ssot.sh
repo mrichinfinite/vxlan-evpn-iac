@@ -3,7 +3,30 @@
 set -euo pipefail
 
 # ============================================================
-# SSOT DATA FILES
+# VXLAN BGP EVPN IaC
+# SSOT DATA / INVENTORY BOOTSTRAP
+#
+# This script populates the repository's declarative SSOT.
+#
+# The generated files are consumed by Ansible roles.
+# Do not configure production/lab devices directly from this
+# script.
+#
+# Repository structure and group names must remain compatible
+# with the Ansible automation.
+# ============================================================
+
+
+# ============================================================
+# DIRECTORIES
+# ============================================================
+
+mkdir -p data
+mkdir -p inventory/group_vars/all
+
+
+# ============================================================
+# STANDARDS
 # ============================================================
 
 cat > data/standards.yml <<'EOF'
@@ -65,28 +88,33 @@ standards:
 
   features:
 
+    common:
+      required:
+        - ospf
+        - pim
+        - bgp
+        - nv overlay
+
+    evpn:
+      enabled: true
+      command: nv overlay evpn
+
     spine:
       required:
         - ospf
         - pim
         - bgp
-        - nv_overlay
-        - nv_overlay_evpn
+        - nv overlay
 
     leaf:
       required:
-        - ospf
-        - pim
-        - bgp
-        - nv_overlay
-        - nv_overlay_evpn
-        - vn_segment_vlan_based
-        - fabric_forwarding
-        - interface_vlan
+        - vn-segment-vlan-based
+        - fabric forwarding
+        - interface-vlan
 
     optional:
-      vpc: true
-      lacp: true
+      vpc: false
+      lacp: false
 
   underlay:
 
@@ -111,6 +139,8 @@ standards:
         required: 9216
 
     ospf:
+
+      process: UNDERLAY
 
       area:
         required: 0.0.0.0
@@ -237,6 +267,10 @@ standards:
 EOF
 
 
+# ============================================================
+# FABRIC
+# ============================================================
+
 cat > data/fabric.yml <<'EOF'
 ---
 fabric:
@@ -325,6 +359,10 @@ fabric:
 EOF
 
 
+# ============================================================
+# DEVICES
+# ============================================================
+
 cat > data/devices.yml <<'EOF'
 ---
 devices:
@@ -358,8 +396,7 @@ devices:
       - ospf
       - pim
       - bgp
-      - nv_overlay
-      - nv_overlay_evpn
+      - nv overlay
 
 
   L-1:
@@ -390,11 +427,10 @@ devices:
       - ospf
       - pim
       - bgp
-      - nv_overlay
-      - nv_overlay_evpn
-      - vn_segment_vlan_based
-      - fabric_forwarding
-      - interface_vlan
+      - nv overlay
+      - vn-segment-vlan-based
+      - fabric forwarding
+      - interface-vlan
 
 
   L-2:
@@ -425,13 +461,16 @@ devices:
       - ospf
       - pim
       - bgp
-      - nv_overlay
-      - nv_overlay_evpn
-      - vn_segment_vlan_based
-      - fabric_forwarding
-      - interface_vlan
+      - nv overlay
+      - vn-segment-vlan-based
+      - fabric forwarding
+      - interface-vlan
 EOF
 
+
+# ============================================================
+# TOPOLOGY
+# ============================================================
 
 cat > data/topology.yml <<'EOF'
 ---
@@ -473,6 +512,10 @@ topology:
       vlan: 10
 EOF
 
+
+# ============================================================
+# OVERLAY
+# ============================================================
 
 cat > data/overlay.yml <<'EOF'
 ---
@@ -588,6 +631,10 @@ overlay:
 EOF
 
 
+# ============================================================
+# POLICIES
+# ============================================================
+
 cat > data/policies.yml <<'EOF'
 ---
 policies:
@@ -627,37 +674,44 @@ EOF
 
 # ============================================================
 # ANSIBLE INVENTORY
+#
+# IMPORTANT:
+# Keep these group names compatible with the Ansible roles:
+#
+#   fabric  -> all fabric devices
+#   spines  -> spine devices
+#   leaves  -> leaf devices
+#
+# Do not rename these groups without updating the automation.
 # ============================================================
 
 cat > inventory/hosts.yml <<'EOF'
 ---
 all:
-
   vars:
-
     ansible_connection: ansible.netcommon.network_cli
     ansible_network_os: cisco.nxos.nxos
+    ansible_port: 22
 
   children:
+    fabric:
+      children:
+        spines:
+          hosts:
+            S-1:
+              ansible_host: 192.168.239.30
 
-    spine:
-
-      hosts:
-
-        S-1:
-          ansible_host: 192.168.239.30
-
-
-    leaf:
-
-      hosts:
-
-        L-1:
-          ansible_host: 192.168.239.31
-
-        L-2:
-          ansible_host: 192.168.239.32
+        leaves:
+          hosts:
+            L-1:
+              ansible_host: 192.168.239.31
+            L-2:
+              ansible_host: 192.168.239.32
 EOF
 
+
+# ============================================================
+# COMPLETION
+# ============================================================
 
 echo "SSOT data files and inventory created successfully."

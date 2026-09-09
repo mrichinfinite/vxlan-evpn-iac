@@ -1,0 +1,101 @@
+---
+devices:
+
+  S-1:
+
+    role: spine
+
+    loopbacks:
+
+      loopback0:
+        address: 10.0.0.11/32
+        ospf: true
+        pim: true
+
+      loopback2:
+        address: 10.1.1.11/32
+        ospf: true
+        pim: true
+        purpose: multicast_rp
+
+    ospf:
+      router_id: 10.0.0.11
+
+    bgp:
+      router_id: 10.0.0.11
+      update_source: loopback0
+      route_reflector: true
+
+    features:
+      - ospf
+      - pim
+      - bgp
+      - nv overlay
+
+
+  L-1:
+
+    role: leaf
+
+    loopbacks:
+
+      loopback0:
+        address: 10.0.0.1/32
+        ospf: true
+        pim: true
+
+      loopback1:
+        address: 10.0.1.1/32
+        ospf: true
+        pim: true
+        purpose: vtep_source
+
+    ospf:
+      router_id: 10.0.0.1
+
+    bgp:
+      router_id: 10.0.0.1
+      update_source: loopback0
+
+    features:
+      - ospf
+      - pim
+      - bgp
+      - nv overlay
+      - vn-segment-vlan-based
+      - fabric forwarding
+      - interface-vlan
+
+
+  L-2:
+
+    role: leaf
+
+    loopbacks:
+
+      loopback0:
+        address: 10.0.0.2/32
+        ospf: true
+        pim: true
+
+      loopback1:
+        address: 10.0.1.2/32
+        ospf: true
+        pim: true
+        purpose: vtep_source
+
+    ospf:
+      router_id: 10.0.0.2
+
+    bgp:
+      router_id: 10.0.0.2
+      update_source: loopback0
+
+    features:
+      - ospf
+      - pim
+      - bgp
+      - nv overlay
+      - vn-segment-vlan-based
+      - fabric forwarding
+      - interface-vlan

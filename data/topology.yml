@@ -1,0 +1,37 @@
+---
+topology:
+
+  fabric_links:
+
+    - description: "S-1 to L-1 underlay fabric link"
+      local_device: S-1
+      local_interface: Ethernet1/1
+      remote_device: L-1
+      remote_interface: Ethernet1/1
+
+    - description: "S-1 to L-2 underlay fabric link"
+      local_device: S-1
+      local_interface: Ethernet1/2
+      remote_device: L-2
+      remote_interface: Ethernet1/2
+
+
+  host_links:
+
+    - description: "H-1 connection to L-1 access VLAN 10"
+      device: L-1
+      interface: Ethernet1/5
+      host: H-1
+      vlan: 10
+
+    - description: "H-2 connection to L-2 access VLAN 20"
+      device: L-2
+      interface: Ethernet1/5
+      host: H-2
+      vlan: 20
+
+    - description: "H-3 connection to L-2 access VLAN 10"
+      device: L-2
+      interface: Ethernet1/6
+      host: H-3
+      vlan: 10

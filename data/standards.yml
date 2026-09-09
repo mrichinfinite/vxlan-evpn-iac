@@ -1,66 +1,234 @@
 ---
 standards:
 
-  project:
-    name: vxlan-bgp-evpn-dev-lab
-    description: VXLAN BGP EVPN Infrastructure as Code development lab
+  ssot:
+    repository_is_authoritative: true
+    direct_device_configuration_allowed: false
+
+  governance:
+    pull_request_required: true
+    human_review_required: true
+    approval_required: true
 
   deployment:
+
     strategy: incremental
-    allow_big_bang_deployment: false
-    human_in_the_loop_required: true
-    pull_request_required: true
-    rollback_required: true
+
+    big_bang_deployments_allowed: false
+
+    requirements:
+      - targeted_changes
+      - pre_deployment_validation
+      - post_deployment_validation
+      - rollback_capability
+
+    progression:
+      - deploy_small_change
+      - validate_change
+      - proceed_to_next_stage
+
+  naming:
+
+    devices:
+      spine_prefix: "S-"
+      leaf_prefix: "L-"
+      border_gateway_prefix: "B-"
+      host_prefix: "H-"
+
+    interfaces:
+
+      loopback0:
+        required_purpose:
+          - underlay_routing_identity
+          - ospf_router_id
+          - bgp_router_id
+          - bgp_update_source
+
+      loopback1:
+        required_purpose:
+          - vtep_source
+
+      loopback2_plus:
+        allowed_purposes:
+          - multicast_rp
+          - multisite_bgw_source
+          - infrastructure_service
 
   features:
 
-    # Required on every fabric device.
     common:
-      - ospf
-      - pim
-      - bgp
-      - nv overlay
+      required:
+        - ospf
+        - pim
+        - bgp
+        - nv overlay
 
-    # Required on every fabric device.
     evpn:
       enabled: true
+      command: nv overlay evpn
 
-    # Required on every VTEP/leaf.
+    spine:
+      required:
+        - ospf
+        - pim
+        - bgp
+        - nv overlay
+
     leaf:
-      - interface-vlan
-      - vn-segment-vlan-based
-      - fabric forwarding
+      required:
+        - vn-segment-vlan-based
+        - fabric forwarding
+        - interface-vlan
 
-    # Optional future capabilities.
-    vpc:
-      enabled: false
-      optional: true
-      standard: vpc_fabric_peering
-
-    lacp:
-      enabled: false
-      optional: true
+    optional:
+      vpc: false
+      lacp: false
 
   underlay:
-    igp: ospf
-    multicast_mode: pim bidir
 
-  loopbacks:
-    loopback0:
-      purpose:
-        - ospf_router_id
-        - bgp_router_id
+    routing_protocol:
+      required: ospf
 
-    loopback1:
-      purpose:
-        - vtep_source
+      allowed:
+        - ospf
 
-  irb:
-    default_mode: symmetric
-    exceptions_require_explicit_design_approval: true
+      disallowed:
+        - isis
+        - eigrp
 
-  change_control:
-    pull_request_required: true
-    human_in_the_loop_required: true
-    validation_required: true
-    rollback_required: true
+    addressing:
+
+      fabric_links:
+        required: ip_unnumbered
+
+    mtu:
+
+      fabric_links:
+        required: 9216
+
+    ospf:
+
+      process: UNDERLAY
+
+      area:
+        required: 0.0.0.0
+
+  multicast:
+
+    required: true
+
+    mode:
+      required: pim_bidir
+
+    rp_redundancy:
+
+      current_design: single_rp
+
+      optional_designs:
+        - phantom_rp
+
+  bgp_evpn:
+
+    required: true
+
+    deployment_model:
+      required: ibgp
+
+    address_family:
+      required: l2vpn_evpn
+
+    communities:
+      required:
+        - standard
+        - extended
+
+    route_reflectors:
+      required: true
+
+      allowed_roles:
+        - spine
+
+  overlay:
+
+    vtep:
+
+      source_interface:
+        required: loopback1
+
+    l2:
+
+      vlan_to_vni_mapping:
+        required: true
+
+      evpn_vni:
+        required: true
+
+    l3:
+
+      routing_model:
+        default: symmetric_irb
+
+      alternative_design:
+        allowed_only_with_documented_exception: true
+
+      l3vni:
+        required:
+          - vrf_vni
+          - vrf_shared_vlan
+          - vn_segment_mapping
+          - l3vni_svi
+          - ip_forward
+          - nve_associate_vrf
+
+    anycast_gateway:
+      required:
+        - common_gateway_mac
+        - anycast_gateway_svi
+
+  vpc:
+
+    optional: true
+
+    preferred_architecture:
+      - fabric_peering
+
+    physical_peer_link:
+      disallowed: true
+
+    virtual_peer_link:
+      required_when_enabled: true
+
+    peer_keepalive:
+      required_when_enabled: true
+
+  multisite:
+
+    optional: true
+
+    required_when_enabled:
+      - border_gateway
+      - site_id
+      - multisite_source_loopback
+      - bgw_tracking
+      - external_evpn_peering
+
+    dci:
+
+      mtu:
+        required: 9216
+
+  configuration_workflow:
+
+    - section: "00_features"
+
+    - section: "01_underlay"
+
+    - section: "02_overlay_l2"
+
+    - section: "03_overlay_l3"
+
+    - section: "04_vpc"
+      optional: true
+
+    - section: "05_multisite"
+      optional: true
