@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+*.retry
+
+secrets.yml
+vault_pass.txt
+
+artifacts/
+reports/
