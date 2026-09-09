@@ -10,3 +10,7 @@
 - name: Configure EVPN L2 VNIs
   ansible.builtin.import_tasks:
     file: evpn.yml
+
+- name: Configure SVI and anycast gateway
+  ansible.builtin.import_tasks:
+    file: anycast_gateway.yml

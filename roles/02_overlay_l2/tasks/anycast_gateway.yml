@@ -1,0 +1,37 @@
+---
+- name: Configure fabric anycast gateway MAC
+  cisco.nxos.nxos_overlay_global:
+    anycast_gateway_mac: "{{ fabric.overlay.anycast_gateway_mac }}"
+
+- name: Configure SVI VRF membership
+  cisco.nxos.nxos_vrf_interfaces:
+    config:
+      - name: "Vlan{{ item }}"
+        vrf_name: "{{ fabric.overlay.l3_vni.vrf }}"
+    state: merged
+  loop: "{{ devices[inventory_hostname].overlay.svi.keys() | list }}"
+  loop_control:
+    label: "Vlan{{ item }} -> {{ fabric.overlay.l3_vni.vrf }}"
+
+- name: Configure SVI IPv4 addresses
+  cisco.nxos.nxos_l3_interfaces:
+    config:
+      - name: "Vlan{{ item }}"
+        ipv4:
+          - address: "{{ devices[inventory_hostname].overlay.svi[item].address }}"
+            tag: "{{ devices[inventory_hostname].overlay.svi[item].tag | default(omit) }}"
+    state: merged
+  loop: "{{ devices[inventory_hostname].overlay.svi.keys() | list }}"
+  loop_control:
+    label: "Vlan{{ item }} -> {{ devices[inventory_hostname].overlay.svi[item].address }}"
+
+- name: Enable SVI anycast gateway mode
+  cisco.nxos.nxos_interfaces:
+    config:
+      - name: "Vlan{{ item }}"
+        enabled: true
+        fabric_forwarding_anycast_gateway: "{{ devices[inventory_hostname].overlay.svi[item].anycast_gateway | default(false) | bool }}"
+    state: merged
+  loop: "{{ devices[inventory_hostname].overlay.svi.keys() | list }}"
+  loop_control:
+    label: "Vlan{{ item }}"
