@@ -2,11 +2,9 @@
 devices:
 
   S-1:
-
     role: spine
 
     loopbacks:
-
       loopback0:
         address: 10.0.0.11/32
         ospf: true
@@ -24,7 +22,14 @@ devices:
     bgp:
       router_id: 10.0.0.11
       update_source: loopback0
-      route_reflector: true
+      neighbors:
+        - address: 10.0.0.1
+          remote_as: 65001
+          role: route_reflector_client
+
+        - address: 10.0.0.2
+          remote_as: 65001
+          role: route_reflector_client
 
     features:
       - ospf
@@ -34,11 +39,9 @@ devices:
 
 
   L-1:
-
     role: leaf
 
     loopbacks:
-
       loopback0:
         address: 10.0.0.1/32
         ospf: true
@@ -56,6 +59,10 @@ devices:
     bgp:
       router_id: 10.0.0.1
       update_source: loopback0
+      neighbors:
+        - address: 10.0.0.11
+          remote_as: 65001
+          role: route_reflector
 
     features:
       - ospf
@@ -68,11 +75,9 @@ devices:
 
 
   L-2:
-
     role: leaf
 
     loopbacks:
-
       loopback0:
         address: 10.0.0.2/32
         ospf: true
@@ -90,6 +95,10 @@ devices:
     bgp:
       router_id: 10.0.0.2
       update_source: loopback0
+      neighbors:
+        - address: 10.0.0.11
+          remote_as: 65001
+          role: route_reflector
 
     features:
       - ospf
