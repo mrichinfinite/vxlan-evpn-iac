@@ -1,0 +1,6 @@
+---
+- name: Enable required common NX-OS features
+  cisco.nxos.nxos_feature:
+    feature: "{{ item }}"
+    state: enabled
+  loop: "{{ standards.features.common }}"

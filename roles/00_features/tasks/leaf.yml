@@ -1,0 +1,7 @@
+---
+- name: Enable required leaf NX-OS features
+  cisco.nxos.nxos_feature:
+    feature: "{{ item }}"
+    state: enabled
+  loop: "{{ standards.features.leaf }}"
+  when: "'leaves' in group_names"

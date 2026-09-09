@@ -1,0 +1,10 @@
+---
+- name: Deploy required NX-OS features
+  hosts: fabric
+  gather_facts: false
+
+  vars_files:
+    - ../data/standards.yml
+
+  roles:
+    - role: 00_features

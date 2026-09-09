@@ -1,0 +1,66 @@
+---
+standards:
+
+  project:
+    name: vxlan-bgp-evpn-dev-lab
+    description: VXLAN BGP EVPN Infrastructure as Code development lab
+
+  deployment:
+    strategy: incremental
+    allow_big_bang_deployment: false
+    human_in_the_loop_required: true
+    pull_request_required: true
+    rollback_required: true
+
+  features:
+
+    # Required on every fabric device.
+    common:
+      - ospf
+      - pim
+      - bgp
+      - nv overlay
+
+    # Required on every fabric device.
+    evpn:
+      enabled: true
+
+    # Required on every VTEP/leaf.
+    leaf:
+      - interface-vlan
+      - vn-segment-vlan-based
+      - fabric forwarding
+
+    # Optional future capabilities.
+    vpc:
+      enabled: false
+      optional: true
+      standard: vpc_fabric_peering
+
+    lacp:
+      enabled: false
+      optional: true
+
+  underlay:
+    igp: ospf
+    multicast_mode: pim bidir
+
+  loopbacks:
+    loopback0:
+      purpose:
+        - ospf_router_id
+        - bgp_router_id
+
+    loopback1:
+      purpose:
+        - vtep_source
+
+  irb:
+    default_mode: symmetric
+    exceptions_require_explicit_design_approval: true
+
+  change_control:
+    pull_request_required: true
+    human_in_the_loop_required: true
+    validation_required: true
+    rollback_required: true

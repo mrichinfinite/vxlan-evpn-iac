@@ -1,0 +1,15 @@
+---
+- name: Validate NX-OS feature configuration
+  hosts: fabric
+  gather_facts: false
+
+  tasks:
+    - name: Collect NX-OS feature state
+      cisco.nxos.nxos_command:
+        commands:
+          - show feature
+      register: feature_output
+
+    - name: Display NX-OS feature state
+      ansible.builtin.debug:
+        var: feature_output.stdout_lines

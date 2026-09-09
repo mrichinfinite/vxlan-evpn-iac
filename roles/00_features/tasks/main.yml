@@ -1,0 +1,12 @@
+---
+- name: Configure common features
+  ansible.builtin.import_tasks: common.yml
+
+- name: Configure EVPN
+  ansible.builtin.import_tasks: evpn.yml
+
+- name: Configure leaf features
+  ansible.builtin.import_tasks: leaf.yml
+
+- name: Configure optional features
+  ansible.builtin.import_tasks: optional.yml
