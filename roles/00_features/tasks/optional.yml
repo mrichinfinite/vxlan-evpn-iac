@@ -1,0 +1,16 @@
+---
+- name: Enable optional vPC feature
+  cisco.nxos.nxos_feature:
+    feature: vpc
+    state: enabled
+  when:
+    - "'leaves' in group_names"
+    - standards.features.vpc.enabled | bool
+
+- name: Enable optional LACP feature
+  cisco.nxos.nxos_feature:
+    feature: lacp
+    state: enabled
+  when:
+    - "'leaves' in group_names"
+    - standards.features.lacp.enabled | bool

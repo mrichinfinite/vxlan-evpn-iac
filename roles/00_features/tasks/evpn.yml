@@ -1,0 +1,6 @@
+---
+- name: Enable NV Overlay EVPN
+  cisco.nxos.nxos_config:
+    lines:
+      - nv overlay evpn
+  when: standards.features.evpn.enabled | bool
