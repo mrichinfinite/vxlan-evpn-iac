@@ -1,0 +1,4 @@
+---
+- name: Configure overlay VLANs
+  ansible.builtin.import_tasks:
+    file: vlans.yml

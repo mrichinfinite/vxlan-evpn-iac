@@ -75,3 +75,22 @@ fabric:
     replication:
       mode: multicast
     anycast_gateway_mac: "0000.1234.5678"
+    vlans:
+      10:
+        name: VLAN10
+        vni: 100010
+        multicast_group: 239.0.0.10
+
+      20:
+        name: VLAN20
+        vni: 100020
+        multicast_group: 239.0.0.20
+
+      30:
+        name: L3VNI
+        vni: 100030
+        multicast_group: 239.0.0.30
+    l3_vni:
+      vni: 100030
+      vlan: 30
+      vrf: TENANT
