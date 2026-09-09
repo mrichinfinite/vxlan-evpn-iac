@@ -1,0 +1,33 @@
+---
+policies:
+
+  route_maps:
+
+    TAGGED:
+
+      description: >
+        Matches directly connected SVI routes carrying the required route tag
+        for redistribution into the tenant BGP address family.
+
+      sequence: 10
+
+      action: permit
+
+      match:
+
+        tag: 12345
+
+
+  bgp:
+
+    vrf_redistribution:
+
+      TENANT:
+
+        address_family: ipv4_unicast
+
+        redistribute:
+
+          source: direct
+
+          route_map: TAGGED

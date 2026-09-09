@@ -1,0 +1,84 @@
+---
+fabric:
+
+  name: vxlan-evpn-lab
+
+  platform:
+    vendor: cisco
+    os: nxos
+    version: "10.6(2)"
+    hardware: "Nexus9000 C9300v"
+
+  capabilities:
+
+    vpc:
+      enabled: false
+
+    multisite:
+      enabled: false
+
+    arp_suppression:
+      enabled: false
+
+    phantom_rp:
+      enabled: false
+
+  addressing:
+
+    underlay_loopbacks:
+      prefix_length: 32
+
+    vtep_loopbacks:
+      prefix_length: 32
+
+  underlay:
+
+    routing_protocol: ospf
+
+    ospf:
+      process: UNDERLAY
+      area: 0.0.0.0
+
+    mtu: 9216
+
+    addressing:
+      fabric_links: ip_unnumbered
+      source_loopback: loopback0
+
+  multicast:
+
+    mode: pim_bidir
+
+    rp:
+      type: single
+      address: 10.1.1.11
+      group_list: 224.0.0.0/4
+
+    phantom_rp:
+      supported: true
+      enabled: false
+
+  bgp:
+
+    asn: 65001
+
+    deployment_model: ibgp
+
+    evpn_address_family: l2vpn_evpn
+
+    route_reflection:
+      enabled: true
+      route_reflector_role: spine
+
+  overlay:
+
+    vtep_source_interface: loopback1
+
+    host_reachability_protocol: bgp
+
+    routing_model: symmetric_irb
+
+    replication:
+      mode: multicast
+
+    anycast_gateway_mac: "0000.1234.5678"

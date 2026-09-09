@@ -5,7 +5,7 @@
     state: enabled
   when:
     - "'leaves' in group_names"
-    - standards.features.vpc.enabled | bool
+    - standards.features.optional.vpc | bool
 
 - name: Enable optional LACP feature
   cisco.nxos.nxos_feature:
@@ -13,4 +13,4 @@
     state: enabled
   when:
     - "'leaves' in group_names"
-    - standards.features.lacp.enabled | bool
+    - standards.features.optional.lacp | bool

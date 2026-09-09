@@ -3,5 +3,5 @@
   cisco.nxos.nxos_feature:
     feature: "{{ item }}"
     state: enabled
-  loop: "{{ standards.features.leaf }}"
+  loop: "{{ standards.features.leaf.required }}"
   when: "'leaves' in group_names"
