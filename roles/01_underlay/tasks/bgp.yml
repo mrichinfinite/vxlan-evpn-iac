@@ -1,0 +1,73 @@
+---
+- name: Configure BGP process
+  cisco.nxos.nxos_bgp_global:
+    config:
+      as_number: "{{ fabric.bgp.asn }}"
+      router_id: "{{ devices[inventory_hostname].bgp.router_id }}"
+      log_neighbor_changes: true
+    state: merged
+
+- name: Configure BGP neighbors
+  cisco.nxos.nxos_bgp_global:
+    config:
+      as_number: "{{ fabric.bgp.asn }}"
+      neighbors:
+        - neighbor_address: "{{ item.address }}"
+          remote_as: "{{ item.remote_as }}"
+          update_source: "{{ devices[inventory_hostname].bgp.update_source }}"
+    state: merged
+  loop: "{{ devices[inventory_hostname].bgp.neighbors }}"
+  loop_control:
+    label: "{{ item.address }}"
+
+- name: Configure BGP L2VPN EVPN address family
+  cisco.nxos.nxos_bgp_neighbor_address_family:
+    config:
+      as_number: "{{ fabric.bgp.asn }}"
+      neighbors:
+        - neighbor_address: "{{ item.address }}"
+          address_family:
+            - afi: l2vpn
+              safi: evpn
+              send_community:
+                both: "{{ fabric.bgp.send_community == 'both' }}"
+    state: merged
+  loop: "{{ devices[inventory_hostname].bgp.neighbors }}"
+  loop_control:
+    label: "{{ item.address }}"
+
+- name: Configure EVPN route reflector clients
+  cisco.nxos.nxos_bgp_neighbor_address_family:
+    config:
+      as_number: "{{ fabric.bgp.asn }}"
+      neighbors:
+        - neighbor_address: "{{ item.address }}"
+          address_family:
+            - afi: l2vpn
+              safi: evpn
+              route_reflector_client: true
+    state: merged
+  loop: "{{ devices[inventory_hostname].bgp.neighbors }}"
+  when:
+    - item.role == "route_reflector_client"
+    - fabric.bgp.route_reflection.enabled | bool
+  loop_control:
+    label: "{{ item.address }}"
+
+- name: Remove stale IPv4 unicast route reflector client configuration
+  cisco.nxos.nxos_bgp_neighbor_address_family:
+    config:
+      as_number: "{{ fabric.bgp.asn }}"
+      neighbors:
+        - neighbor_address: "{{ item.address }}"
+          address_family:
+            - afi: ipv4
+              safi: unicast
+              route_reflector_client: true
+    state: deleted
+  loop: "{{ devices[inventory_hostname].bgp.neighbors }}"
+  when:
+    - inventory_hostname == "S-1"
+    - item.role == "route_reflector_client"
+  loop_control:
+    label: "{{ item.address }}"

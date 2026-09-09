@@ -55,4 +55,4 @@ jobs:
       - name: Check Ansible playbook syntax
         run: |
           ansible-playbook --syntax-check playbooks/deploy_features.yml
-          ansible-playbook --syntax-check playbooks/validate_features.yml
+          ansible-playbook --syntax-check tests/validation/validate_features.yml

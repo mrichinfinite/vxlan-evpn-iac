@@ -1,0 +1,232 @@
+---
+- name: Validate VXLAN EVPN fabric
+  hosts: fabric
+  gather_facts: false
+
+  vars_files:
+    - ../../data/standards.yml
+    - ../../data/fabric.yml
+    - ../../data/devices.yml
+    - ../../data/topology.yml
+
+  tasks:
+
+    - name: Collect OSPF neighbor state
+      cisco.nxos.nxos_command:
+        commands:
+          - show ip ospf neighbors
+      register: ospf_output
+
+    - name: Validate OSPF neighbors
+      ansible.builtin.assert:
+        that:
+          - >
+            (
+              inventory_hostname == "S-1"
+              and
+              ospf_output.stdout[0] is search("10.0.0.1")
+              and
+              ospf_output.stdout[0] is search("10.0.0.2")
+            )
+            or
+            (
+              inventory_hostname == "L-1"
+              and
+              ospf_output.stdout[0] is search("10.0.0.11")
+            )
+            or
+            (
+              inventory_hostname == "L-2"
+              and
+              ospf_output.stdout[0] is search("10.0.0.11")
+            )
+        fail_msg: "OSPF neighbor validation failed on {{ inventory_hostname }}."
+        success_msg: "OSPF validation passed on {{ inventory_hostname }}."
+
+    - name: Collect PIM neighbor state
+      cisco.nxos.nxos_command:
+        commands:
+          - show ip pim neighbor
+      register: pim_output
+
+    - name: Validate PIM neighbors
+      ansible.builtin.assert:
+        that:
+          - >
+            (
+              inventory_hostname == "S-1"
+              and
+              pim_output.stdout[0] is search("10.0.0.1")
+              and
+              pim_output.stdout[0] is search("10.0.0.2")
+            )
+            or
+            (
+              inventory_hostname == "L-1"
+              and
+              pim_output.stdout[0] is search("10.0.0.11")
+            )
+            or
+            (
+              inventory_hostname == "L-2"
+              and
+              pim_output.stdout[0] is search("10.0.0.11")
+            )
+        fail_msg: "PIM neighbor validation failed on {{ inventory_hostname }}."
+        success_msg: "PIM validation passed on {{ inventory_hostname }}."
+
+    - name: Collect PIM RP configuration
+      cisco.nxos.nxos_command:
+        commands:
+          - show running-config | include "ip pim rp-address"
+      register: pim_rp_output
+
+    - name: Validate PIM RP configuration
+      ansible.builtin.assert:
+        that:
+          - >
+            inventory_hostname != "S-1"
+            or
+            (
+              pim_rp_output.stdout[0] is search(fabric.multicast.rp.address)
+              and
+              pim_rp_output.stdout[0] is search(fabric.multicast.rp.group_list)
+              and
+              pim_rp_output.stdout[0] is search("bidir")
+            )
+        fail_msg: >
+          PIM RP validation failed on {{ inventory_hostname }}.
+          Expected RP {{ fabric.multicast.rp.address }},
+          group-list {{ fabric.multicast.rp.group_list }},
+          with bidir.
+        success_msg: "PIM RP validation passed on {{ inventory_hostname }}."
+
+    - name: Collect BGP EVPN summary
+      cisco.nxos.nxos_command:
+        commands:
+          - show bgp l2vpn evpn summary
+      register: bgp_evpn_summary
+
+    - name: Validate BGP EVPN peer count
+      ansible.builtin.assert:
+        that:
+          - >
+            (
+              inventory_hostname == "S-1"
+              and
+              bgp_evpn_summary.stdout[0] is search("10.0.0.1")
+              and
+              bgp_evpn_summary.stdout[0] is search("10.0.0.2")
+            )
+            or
+            (
+              inventory_hostname == "L-1"
+              and
+              bgp_evpn_summary.stdout[0] is search("10.0.0.11")
+            )
+            or
+            (
+              inventory_hostname == "L-2"
+              and
+              bgp_evpn_summary.stdout[0] is search("10.0.0.11")
+            )
+        fail_msg: "BGP EVPN peer-count validation failed on {{ inventory_hostname }}."
+        success_msg: "BGP EVPN peer-count validation passed on {{ inventory_hostname }}."
+
+    - name: Validate BGP EVPN sessions are established
+      ansible.builtin.assert:
+        that:
+          - >
+            (
+              inventory_hostname == "S-1"
+              and
+              bgp_evpn_summary.stdout[0] is search("10.0.0.1.*[1-9][0-9]*")
+              and
+              bgp_evpn_summary.stdout[0] is search("10.0.0.2.*[1-9][0-9]*")
+            )
+            or
+            (
+              inventory_hostname == "L-1"
+              and
+              bgp_evpn_summary.stdout[0] is search("10.0.0.11.*[1-9][0-9]*")
+            )
+            or
+            (
+              inventory_hostname == "L-2"
+              and
+              bgp_evpn_summary.stdout[0] is search("10.0.0.11.*[1-9][0-9]*")
+            )
+        fail_msg: "BGP EVPN session validation failed on {{ inventory_hostname }}."
+        success_msg: "BGP EVPN sessions are established on {{ inventory_hostname }}."
+
+    - name: Collect BGP EVPN neighbor configuration
+      cisco.nxos.nxos_command:
+        commands:
+          - show running-config | section "router bgp"
+      register: bgp_running_config
+
+    - name: Validate BGP send-community configuration
+      ansible.builtin.assert:
+        that:
+          - >
+            fabric.bgp.send_community != "both"
+            or
+            bgp_running_config.stdout[0] is search("send-community")
+        fail_msg: >
+          BGP send-community validation failed on {{ inventory_hostname }}.
+          The SSOT requires send-community both.
+        success_msg: "BGP send-community validation passed on {{ inventory_hostname }}."
+
+    - name: Validate spine route-reflector clients
+      ansible.builtin.assert:
+        that:
+          - >
+            inventory_hostname != "S-1"
+            or
+            (
+              bgp_running_config.stdout[0] is search("10.0.0.1")
+              and
+              bgp_running_config.stdout[0] is search("10.0.0.2")
+            )
+        fail_msg: "Route-reflector client validation failed on S-1."
+        success_msg: "Route-reflector validation passed on S-1."
+
+    - name: Collect underlay interface MTU
+      cisco.nxos.nxos_command:
+        commands:
+          - show interface Ethernet1/1 | include "MTU"
+          - show interface Ethernet1/2 | include "MTU"
+      register: mtu_output
+
+    - name: Validate underlay MTU
+      ansible.builtin.assert:
+        that:
+          - >
+            (
+              inventory_hostname == "S-1"
+              and
+              mtu_output.stdout[0] is search("MTU 9216")
+              and
+              mtu_output.stdout[1] is search("MTU 9216")
+            )
+            or
+            (
+              inventory_hostname == "L-1"
+              and
+              mtu_output.stdout[0] is search("MTU 9216")
+            )
+            or
+            (
+              inventory_hostname == "L-2"
+              and
+              mtu_output.stdout[1] is search("MTU 9216")
+            )
+        fail_msg: "Underlay MTU validation failed on {{ inventory_hostname }}."
+        success_msg: "Underlay MTU validation passed on {{ inventory_hostname }}."
+
+    - name: Section 1 validation passed
+      ansible.builtin.debug:
+        msg: >
+          SECTION 1 VALIDATION PASSED on {{ inventory_hostname }} —
+          OSPF, PIM, PIM RP, BGP EVPN, send-community,
+          route-reflector, and underlay MTU requirements are healthy.

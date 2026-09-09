@@ -36,7 +36,7 @@ fabric:
     routing_protocol: ospf
 
     ospf:
-      process: UNDERLAY
+      process: 1
       area: 0.0.0.0
 
     mtu: 9216
@@ -59,26 +59,19 @@ fabric:
       enabled: false
 
   bgp:
-
     asn: 65001
-
     deployment_model: ibgp
-
     evpn_address_family: l2vpn_evpn
+    send_community: both
 
     route_reflection:
       enabled: true
       route_reflector_role: spine
 
   overlay:
-
     vtep_source_interface: loopback1
-
     host_reachability_protocol: bgp
-
     routing_model: symmetric_irb
-
     replication:
       mode: multicast
-
     anycast_gateway_mac: "0000.1234.5678"

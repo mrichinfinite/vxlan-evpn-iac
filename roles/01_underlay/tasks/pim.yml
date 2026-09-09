@@ -1,0 +1,30 @@
+---
+- name: Enable PIM sparse mode on loopback interfaces
+  cisco.nxos.nxos_config:
+    parents:
+      - "interface {{ item.key }}"
+    lines:
+      - ip pim sparse-mode
+  loop: "{{ devices[inventory_hostname].loopbacks | dict2items }}"
+  when: item.value.pim | default(false) | bool
+  loop_control:
+    label: "{{ item.key }}"
+
+- name: Enable PIM sparse mode on fabric interfaces
+  cisco.nxos.nxos_config:
+    parents:
+      - "interface {{ item.local_interface }}"
+    lines:
+      - ip pim sparse-mode
+  loop: "{{ topology.fabric_links }}"
+  when: item.local_device == inventory_hostname
+  loop_control:
+    label: "{{ item.local_interface }}"
+
+- name: Configure multicast RP on spine
+  cisco.nxos.nxos_config:
+    lines:
+      - "ip pim rp-address {{ fabric.multicast.rp.address }} group-list {{ fabric.multicast.rp.group_list }} bidir"
+  when:
+    - inventory_hostname == "S-1"
+    - fabric.multicast.rp.type == "single"

@@ -1,0 +1,16 @@
+---
+- name: Configure underlay interfaces
+  ansible.builtin.import_tasks:
+    file: interfaces.yml
+
+- name: Configure underlay OSPF
+  ansible.builtin.import_tasks:
+    file: ospf.yml
+
+- name: Configure underlay PIM
+  ansible.builtin.import_tasks:
+    file: pim.yml
+
+- name: Configure fabric BGP control plane
+  ansible.builtin.import_tasks:
+    file: bgp.yml
