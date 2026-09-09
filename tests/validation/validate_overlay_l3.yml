@@ -1,0 +1,101 @@
+---
+- name: Validate Section 2 Increment 3 TENANT VRF and L3VNI
+  hosts: leaves
+  gather_facts: false
+
+  vars_files:
+    - ../../data/fabric.yml
+    - ../../data/devices.yml
+
+  tasks:
+
+    - name: Gather TENANT VRF configuration
+      cisco.nxos.nxos_command:
+        commands:
+          - "show running-config | section ^vrf"
+      register: vrf_config
+
+    - name: Validate TENANT VRF exists
+      ansible.builtin.assert:
+        that:
+          - "'vrf context ' ~ fabric.overlay.l3_vni.vrf in vrf_config.stdout[0]"
+        fail_msg: >
+          TENANT VRF is missing on {{ inventory_hostname }}.
+        success_msg: >
+          TENANT VRF is present on {{ inventory_hostname }}.
+
+    - name: Validate TENANT L3VNI
+      ansible.builtin.assert:
+        that:
+          - >
+            (
+              '  vni ' ~ (fabric.overlay.l3_vni.vni | string)
+            ) in vrf_config.stdout[0]
+        fail_msg: >
+          L3VNI {{ fabric.overlay.l3_vni.vni }} is missing from
+          TENANT VRF on {{ inventory_hostname }}.
+        success_msg: >
+          TENANT L3VNI {{ fabric.overlay.l3_vni.vni }} is present
+          on {{ inventory_hostname }}.
+
+    - name: Validate TENANT RD
+      ansible.builtin.assert:
+        that:
+          - "'  rd auto' in vrf_config.stdout[0]"
+        fail_msg: >
+          TENANT VRF RD auto is missing on {{ inventory_hostname }}.
+        success_msg: >
+          TENANT VRF RD auto is present on {{ inventory_hostname }}.
+
+    - name: Validate TENANT IPv4 address family
+      ansible.builtin.assert:
+        that:
+          - "'  address-family ipv4 unicast' in vrf_config.stdout[0]"
+        fail_msg: >
+          TENANT IPv4 unicast address family is missing on
+          {{ inventory_hostname }}.
+        success_msg: >
+          TENANT IPv4 unicast address family is present on
+          {{ inventory_hostname }}.
+
+    - name: Validate EVPN route-target auto configuration
+      ansible.builtin.assert:
+        that:
+          - "'    route-target both auto' in vrf_config.stdout[0]"
+          - "'    route-target both auto evpn' in vrf_config.stdout[0]"
+        fail_msg: >
+          TENANT EVPN route-target auto configuration is incomplete
+          on {{ inventory_hostname }}.
+        success_msg: >
+          TENANT EVPN route-target auto configuration is correct
+          on {{ inventory_hostname }}.
+
+    - name: Gather VLAN configuration
+      cisco.nxos.nxos_vlans:
+        state: gathered
+      register: gathered_vlans
+
+    - name: Validate VLAN 30 remains mapped to the L3VNI
+      ansible.builtin.assert:
+        that:
+          - >
+            (
+              gathered_vlans.gathered
+              | selectattr('vlan_id', 'equalto', fabric.overlay.l3_vni.vlan | int)
+              | map(attribute='mapped_vni')
+              | map('int')
+              | list
+              | first
+            ) == (fabric.overlay.l3_vni.vni | int)
+        fail_msg: >
+          VLAN {{ fabric.overlay.l3_vni.vlan }} does not map to
+          L3VNI {{ fabric.overlay.l3_vni.vni }} on {{ inventory_hostname }}.
+        success_msg: >
+          VLAN {{ fabric.overlay.l3_vni.vlan }} correctly maps to
+          L3VNI {{ fabric.overlay.l3_vni.vni }} on {{ inventory_hostname }}.
+
+    - name: Section 2 Increment 3 validation complete
+      ansible.builtin.debug:
+        msg: >
+          TENANT VRF and L3VNI validation passed on
+          {{ inventory_hostname }}.

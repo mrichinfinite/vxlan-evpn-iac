@@ -1,0 +1,8 @@
+---
+- name: Configure TENANT VRF and L3VNI
+  ansible.builtin.import_tasks:
+    file: vrf.yml
+
+- name: Configure TENANT VRF EVPN address family
+  ansible.builtin.import_tasks:
+    file: vrf_af.yml

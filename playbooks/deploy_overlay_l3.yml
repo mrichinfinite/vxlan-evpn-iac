@@ -1,0 +1,13 @@
+---
+- name: Deploy VXLAN EVPN L3 overlay
+  hosts: leaves
+  gather_facts: false
+
+  vars_files:
+    - ../data/standards.yml
+    - ../data/fabric.yml
+    - ../data/devices.yml
+    - ../data/topology.yml
+
+  roles:
+    - role: 02_overlay_l3

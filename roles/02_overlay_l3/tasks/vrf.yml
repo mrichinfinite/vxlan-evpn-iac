@@ -1,0 +1,15 @@
+---
+- name: Configure TENANT VRF with RD
+  cisco.nxos.nxos_vrf_global:
+    config:
+      vrfs:
+        - name: "{{ fabric.overlay.l3_vni.vrf }}"
+          rd: auto
+    state: merged
+
+- name: Configure TENANT L3VNI
+  cisco.nxos.nxos_config:
+    parents:
+      - "vrf context {{ fabric.overlay.l3_vni.vrf }}"
+    lines:
+      - "vni {{ fabric.overlay.l3_vni.vni | int }}"
