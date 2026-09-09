@@ -1,0 +1,10 @@
+---
+- name: Configure VLAN to VNI mappings
+  cisco.nxos.nxos_vlans:
+    config:
+      - vlan_id: "{{ item | int }}"
+        mapped_vni: "{{ fabric.overlay.vlans[item].vni | int }}"
+    state: merged
+  loop: "{{ devices[inventory_hostname].overlay.vlans }}"
+  loop_control:
+    label: "VLAN {{ item }} -> VNI {{ fabric.overlay.vlans[item].vni }}"
