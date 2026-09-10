@@ -1,14 +1,4 @@
 ---
-- name: Configure loopback interfaces
-  cisco.nxos.nxos_config:
-    parents:
-      - "interface {{ item.key }}"
-    lines:
-      - no shutdown
-  loop: "{{ devices[inventory_hostname].loopbacks | dict2items }}"
-  loop_control:
-    label: "{{ item.key }}"
-
 - name: Configure loopback IP addresses
   cisco.nxos.nxos_l3_interfaces:
     config:
@@ -67,7 +57,7 @@
     parents:
       - "interface {{ item.local_interface }}"
     lines:
-      - "ip unnumbered loopback 0"
+      - "ip unnumbered loopback0"
   loop: "{{ topology.fabric_links }}"
   when: item.local_device == inventory_hostname
   loop_control:
