@@ -1,0 +1,18 @@
+---
+- name: Configure TENANT VRF and L3VNI
+  ansible.builtin.import_tasks: vrf.yml
+
+- name: Configure TENANT IPv4 EVPN route targets
+  ansible.builtin.import_tasks: vrf_af.yml
+
+- name: Configure L3VNI shared VLAN
+  ansible.builtin.import_tasks: shared_vlan.yml
+
+- name: Configure anycast gateway and tenant SVIs
+  ansible.builtin.import_tasks: anycast_gateway.yml
+
+- name: Configure L3VNI NVE membership
+  ansible.builtin.import_tasks: nve.yml
+
+- name: Configure tenant route redistribution
+  ansible.builtin.import_tasks: redistribution.yml

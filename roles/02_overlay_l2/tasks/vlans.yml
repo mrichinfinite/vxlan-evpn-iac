@@ -1,0 +1,12 @@
+---
+- name: Configure L2 overlay VLANs
+  cisco.nxos.nxos_vlans:
+    config:
+      - vlan_id: "{{ item | int }}"
+        name: "{{ fabric.overlay.vlans[item].name }}"
+    state: merged
+  loop: "{{ devices[inventory_hostname].overlay.vlans }}"
+  when:
+    - item | int != fabric.overlay.l3_vni.vlan | int
+  loop_control:
+    label: "{{ item }}"

@@ -1,0 +1,12 @@
+---
+- name: Configure L2 overlay VLANs
+  ansible.builtin.import_tasks: vlans.yml
+
+- name: Configure L2 VLAN to VNI mappings
+  ansible.builtin.import_tasks: vni_mappings.yml
+
+- name: Configure L2 NVE
+  ansible.builtin.import_tasks: nve.yml
+
+- name: Configure EVPN L2 VNIs
+  ansible.builtin.import_tasks: evpn.yml

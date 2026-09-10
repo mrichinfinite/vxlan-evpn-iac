@@ -1,0 +1,8 @@
+---
+- name: Configure L3VNI shared VLAN
+  cisco.nxos.nxos_vlans:
+    config:
+      - vlan_id: "{{ fabric.overlay.l3_vni.vlan | int }}"
+        name: "{{ fabric.overlay.vlans[fabric.overlay.l3_vni.vlan | int].name }}"
+        mapped_vni: "{{ fabric.overlay.l3_vni.vni | int }}"
+    state: merged

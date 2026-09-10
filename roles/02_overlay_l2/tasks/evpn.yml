@@ -1,0 +1,15 @@
+---
+- name: Configure EVPN L2 VNIs
+  cisco.nxos.nxos_config:
+    parents:
+      - evpn
+      - "vni {{ fabric.overlay.vlans[item].vni }} l2"
+    lines:
+      - rd auto
+      - route-target import auto
+      - route-target export auto
+  loop: "{{ devices[inventory_hostname].overlay.vlans }}"
+  when:
+    - item | int != fabric.overlay.l3_vni.vlan | int
+  loop_control:
+    label: "EVPN L2 VNI {{ fabric.overlay.vlans[item].vni }}"

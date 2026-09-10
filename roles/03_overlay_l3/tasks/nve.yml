@@ -1,0 +1,8 @@
+---
+- name: Configure L3VNI membership on NVE
+  cisco.nxos.nxos_config:
+    parents:
+      - "interface nve1"
+      - "member vni {{ fabric.overlay.l3_vni.vni | int }} associate-vrf"
+    lines:
+      - "mcast-group {{ fabric.overlay.vlans[fabric.overlay.l3_vni.vlan | int].multicast_group }}"

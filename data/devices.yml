@@ -64,6 +64,20 @@ devices:
           remote_as: 65001
           role: route_reflector
 
+    overlay:
+      vlans:
+        - 10
+        - 30
+
+      l3_vni:
+        enabled: true
+
+      svi:
+        10:
+          address: 192.168.10.254/24
+          anycast_gateway: true
+          tag: 12345
+
     features:
       - ospf
       - pim
@@ -99,6 +113,26 @@ devices:
         - address: 10.0.0.11
           remote_as: 65001
           role: route_reflector
+
+    overlay:
+      vlans:
+        - 10
+        - 20
+        - 30
+
+      l3_vni:
+        enabled: true
+
+      svi:
+        10:
+          address: 192.168.10.254/24
+          anycast_gateway: true
+          tag: 12345
+
+        20:
+          address: 192.168.20.254/24
+          anycast_gateway: true
+          tag: 12345
 
     features:
       - ospf

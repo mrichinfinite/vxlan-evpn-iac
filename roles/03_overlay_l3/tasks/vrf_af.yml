@@ -1,0 +1,7 @@
+---
+- name: Configure TENANT IPv4 EVPN route targets
+  cisco.nxos.nxos_vrf_af:
+    vrf: "{{ fabric.overlay.l3_vni.vrf }}"
+    afi: ipv4
+    route_target_both_auto_evpn: true
+    state: present
