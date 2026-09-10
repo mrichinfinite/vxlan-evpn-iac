@@ -1,0 +1,6 @@
+---
+- name: Configure endpoint interfaces
+  ansible.builtin.import_tasks: interfaces.yml
+
+- name: Configure endpoint access ports
+  ansible.builtin.import_tasks: access_ports.yml

@@ -1,0 +1,11 @@
+---
+- name: Configure endpoint interface descriptions and state
+  cisco.nxos.nxos_interfaces:
+    config:
+      - name: "{{ item.key }}"
+        description: "{{ item.value.description }}"
+        mode: layer2
+    state: merged
+  loop: "{{ devices[inventory_hostname].endpoint_ports | default({}) | dict2items }}"
+  loop_control:
+    label: "{{ item.key }} -> {{ item.value.description }}"

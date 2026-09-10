@@ -1,0 +1,33 @@
+---
+- name: Validate endpoint attachments
+  hosts: leaves
+  gather_facts: false
+
+  vars_files:
+    - ../../data/devices.yml
+
+  tasks:
+
+    - name: Validate endpoint interface configuration
+      cisco.nxos.nxos_command:
+        commands:
+          - "show running-config interface {{ item.key }}"
+          - "show interface {{ item.key }} switchport"
+      loop: "{{ devices[inventory_hostname].endpoint_ports | default({}) | dict2items }}"
+      loop_control:
+        label: "{{ inventory_hostname }} {{ item.key }}"
+      register: endpoint_interface_config
+
+    - name: Assert endpoint interface configuration
+      ansible.builtin.assert:
+        that:
+          - "'description ' ~ item.item.value.description in item.stdout[0]"
+          - "'switchport access vlan ' ~ (item.item.value.access_vlan | string) in item.stdout[0]"
+          - "'Operational Mode: access' in item.stdout[1]"
+          - "'Access Mode VLAN: ' ~ (item.item.value.access_vlan | string) in item.stdout[1]"
+        fail_msg: >-
+          Endpoint {{ item.item.key }} on {{ inventory_hostname }}
+          does not match the intended endpoint configuration.
+      loop: "{{ endpoint_interface_config.results }}"
+      loop_control:
+        label: "{{ inventory_hostname }} {{ item.item.key }}"
