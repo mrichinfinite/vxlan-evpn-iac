@@ -1,0 +1,10 @@
+---
+- name: Configure L3VNI SVI
+  cisco.nxos.nxos_config:
+    parents:
+      - "interface Vlan{{ fabric.overlay.l3_vni.vlan | int }}"
+    lines:
+      - "no shutdown"
+      - "vrf member {{ fabric.overlay.l3_vni.vrf }}"
+      - "no ip redirects"
+      - "ip forward"

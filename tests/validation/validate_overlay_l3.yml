@@ -72,6 +72,24 @@
         fail_msg: "VLAN 30 L3VNI mapping is incorrect on {{ inventory_hostname }}."
         success_msg: "VLAN 30 correctly maps to L3VNI 100030 on {{ inventory_hostname }}."
 
+    - name: Validate L3VNI SVI configuration
+      cisco.nxos.nxos_command:
+        commands:
+          - "show running-config interface Vlan{{ fabric.overlay.l3_vni.vlan | int }}"
+      register: l3vni_svi_config
+
+    - name: Assert L3VNI SVI configuration
+      ansible.builtin.assert:
+        that:
+          - "'interface Vlan' ~ (fabric.overlay.l3_vni.vlan | string) in l3vni_svi_config.stdout[0]"
+          - "'no shutdown' in l3vni_svi_config.stdout[0]"
+          - "'vrf member ' ~ fabric.overlay.l3_vni.vrf in l3vni_svi_config.stdout[0]"
+          - "'no ip redirects' in l3vni_svi_config.stdout[0]"
+          - "'ip forward' in l3vni_svi_config.stdout[0]"
+        fail_msg: >-
+          L3VNI SVI Vlan{{ fabric.overlay.l3_vni.vlan | int }}
+          does not match the intended L3VNI SVI configuration.
+
     - name: Gather L3VNI NVE configuration
       cisco.nxos.nxos_command:
         commands:
