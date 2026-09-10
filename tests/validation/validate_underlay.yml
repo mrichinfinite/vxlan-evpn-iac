@@ -1,5 +1,5 @@
 ---
-- name: Validate VXLAN EVPN fabric
+- name: Validate Fabric Underlay
   hosts: fabric
   gather_facts: false
 
