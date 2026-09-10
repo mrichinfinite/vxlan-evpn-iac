@@ -27,7 +27,7 @@ The development environment is a Cisco Modeling Labs fabric consisting of:
 The CML lab itself is managed separately from this repository. GitHub Actions performs repository and Ansible validation only; it does not create, start, or manage the CML lab.
 
 ## Topology
-![VXLAN BGP EVPN Fabric Topology](docs/images/vxlan-evpn-topology.png)
+![VXLAN BGP EVPN Fabric Topology](docs/vxlan-evpn-topology.png)
 
 ## Architecture
 
