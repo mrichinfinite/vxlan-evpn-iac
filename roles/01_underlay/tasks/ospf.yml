@@ -25,7 +25,7 @@
 - name: Enable OSPF on fabric interfaces
   cisco.nxos.nxos_ospf_interfaces:
     config:
-      - name: "{{ item.local_interface }}"
+      - name: "{{ item.local_interface if item.local_device == inventory_hostname else item.remote_interface }}"
         address_family:
           - afi: ipv4
             processes:
@@ -34,6 +34,9 @@
                   area_id: "{{ fabric.underlay.ospf.area }}"
                   secondaries: false
   loop: "{{ topology.fabric_links }}"
-  when: item.local_device == inventory_hostname
+  when:
+    - inventory_hostname == item.local_device or inventory_hostname == item.remote_device
   loop_control:
-    label: "{{ item.local_interface }}"
+    label: >-
+      {{ item.local_interface if item.local_device == inventory_hostname
+         else item.remote_interface }}

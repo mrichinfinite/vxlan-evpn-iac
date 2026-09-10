@@ -13,18 +13,18 @@
 - name: Enable PIM sparse mode on fabric interfaces
   cisco.nxos.nxos_config:
     parents:
-      - "interface {{ item.local_interface }}"
+      - "interface {{ item.local_interface if item.local_device == inventory_hostname else item.remote_interface }}"
     lines:
       - ip pim sparse-mode
   loop: "{{ topology.fabric_links }}"
-  when: item.local_device == inventory_hostname
+  when:
+    - inventory_hostname == item.local_device or inventory_hostname == item.remote_device
   loop_control:
-    label: "{{ item.local_interface }}"
+    label: >-
+      {{ item.local_interface if item.local_device == inventory_hostname
+         else item.remote_interface }}
 
-- name: Configure multicast RP on spine
+- name: Configure multicast RP on all fabric switches
   cisco.nxos.nxos_config:
     lines:
       - "ip pim rp-address {{ fabric.multicast.rp.address }} group-list {{ fabric.multicast.rp.group_list }} bidir"
-  when:
-    - inventory_hostname == "S-1"
-    - fabric.multicast.rp.type == "single"
