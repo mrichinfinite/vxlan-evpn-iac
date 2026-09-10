@@ -26,6 +26,9 @@ The development environment is a Cisco Modeling Labs fabric consisting of:
 
 The CML lab itself is managed separately from this repository. GitHub Actions performs repository and Ansible validation only; it does not create, start, or manage the CML lab.
 
+## Topology
+![VXLAN BGP EVPN Fabric Topology](docs/images/vxlan-evpn-topology.png)
+
 ## Architecture
 
 The fabric uses:
@@ -88,49 +91,79 @@ vxlan-evpn-iac/
 │   └── workflows/
 │       └── ci.yml
 ├── data/
-│   ├── standards.yml
-│   ├── fabric.yml
 │   ├── devices.yml
-│   ├── topology.yml
+│   ├── fabric.yml
 │   ├── overlay.yml
-│   └── policies.yml
+│   ├── policies.yml
+│   ├── standards.yml
+│   └── topology.yml
 ├── docs/
 │   ├── architecture.md
+│   ├── change-governance.md
 │   ├── standards.md
-│   └── change-governance.md
+│   └── vxlan-evpn-topology.png
 ├── inventory/
-│   ├── hosts.example.yml
-│   └── group_vars/
-│       └── all/
-│           └── vault.example.yml
+│   ├── group_vars/
+│   │   └── all/
+│   │       └── vault_example.yml
+│   └── hosts_example.yml
 ├── playbooks/
+│   ├── deploy_endpoints.yml
 │   ├── deploy_features.yml
-│   ├── deploy_underlay.yml
 │   ├── deploy_overlay_l2.yml
 │   ├── deploy_overlay_l3.yml
-│   └── deploy_endpoints.yml
+│   └── deploy_underlay.yml
 ├── roles/
 │   ├── 00_features/
+│   │   └── tasks/
+│   │       ├── common.yml
+│   │       ├── evpn.yml
+│   │       ├── leaf.yml
+│   │       ├── main.yml
+│   │       └── optional.yml
 │   ├── 01_underlay/
+│   │   └── tasks/
+│   │       ├── bgp.yml
+│   │       ├── interfaces.yml
+│   │       ├── main.yml
+│   │       ├── ospf.yml
+│   │       └── pim.yml
 │   ├── 02_overlay_l2/
+│   │   └── tasks/
+│   │       ├── evpn.yml
+│   │       ├── main.yml
+│   │       ├── nve.yml
+│   │       ├── vlans.yml
+│   │       └── vni_mappings.yml
 │   ├── 03_overlay_l3/
+│   │   └── tasks/
+│   │       ├── anycast_gateway.yml
+│   │       ├── l3vni_svi.yml
+│   │       ├── main.yml
+│   │       ├── nve.yml
+│   │       ├── redistribution.yml
+│   │       ├── shared_vlan.yml
+│   │       ├── vrf_af.yml
+│   │       └── vrf.yml
 │   ├── 04_vpc/
-│   │   └── tasks/
-│   │       └── .gitkeep
+│   │   └── .gitkeep
 │   ├── 05_multisite/
-│   │   └── tasks/
-│   │       └── .gitkeep
+│   │   └── .gitkeep
 │   └── 06_endpoints/
+│       └── tasks/
+│           ├── access_ports.yml
+│           ├── interfaces.yml
+│           └── main.yml
 ├── tests/
 │   └── validation/
+│       ├── validate_endpoints.yml
 │       ├── validate_features.yml
-│       ├── validate_underlay.yml
 │       ├── validate_overlay_l2.yaml
 │       ├── validate_overlay_l3.yml
-│       └── validate_endpoints.yml
+│       └── validate_underlay.yml
 ├── .gitignore
 ├── ansible.cfg
-├── populate_ssot.sh
 ├── README.md
 ├── requirements.txt
-└── requirements.yml
+├── requirements.yml
+└── SECURITY.md
