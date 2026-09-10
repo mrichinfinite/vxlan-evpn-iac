@@ -1,0 +1,11 @@
+---
+- name: Configure endpoint access ports
+  cisco.nxos.nxos_l2_interfaces:
+    config:
+      - name: "{{ item.key }}"
+        access:
+          vlan: "{{ item.value.access_vlan | int }}"
+    state: merged
+  loop: "{{ devices[inventory_hostname].endpoint_ports | default({}) | dict2items }}"
+  loop_control:
+    label: "{{ item.key }} -> VLAN {{ item.value.access_vlan }}"
