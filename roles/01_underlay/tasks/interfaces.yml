@@ -12,53 +12,68 @@
 - name: Configure fabric interfaces as Layer 3
   cisco.nxos.nxos_config:
     parents:
-      - "interface {{ item.local_interface }}"
+      - "interface {{ item.local_interface if item.local_device == inventory_hostname else item.remote_interface }}"
     lines:
       - no switchport
   loop: "{{ topology.fabric_links }}"
-  when: item.local_device == inventory_hostname
+  when:
+    - inventory_hostname == item.local_device or inventory_hostname == item.remote_device
   loop_control:
-    label: "{{ item.local_interface }}"
+    label: >-
+      {{ item.local_interface if item.local_device == inventory_hostname
+         else item.remote_interface }}
 
 - name: Configure fabric interfaces as point-to-point
   cisco.nxos.nxos_config:
     parents:
-      - "interface {{ item.local_interface }}"
+      - "interface {{ item.local_interface if item.local_device == inventory_hostname else item.remote_interface }}"
     lines:
       - medium p2p
   loop: "{{ topology.fabric_links }}"
-  when: item.local_device == inventory_hostname
+  when:
+    - inventory_hostname == item.local_device or inventory_hostname == item.remote_device
   loop_control:
-    label: "{{ item.local_interface }}"
+    label: >-
+      {{ item.local_interface if item.local_device == inventory_hostname
+         else item.remote_interface }}
 
 - name: Configure fabric interface descriptions and enable interfaces
   cisco.nxos.nxos_interfaces:
     config:
-      - name: "{{ item.local_interface }}"
+      - name: "{{ item.local_interface if item.local_device == inventory_hostname else item.remote_interface }}"
         description: "{{ item.description }}"
         enabled: true
   loop: "{{ topology.fabric_links }}"
-  when: item.local_device == inventory_hostname
+  when:
+    - inventory_hostname == item.local_device or inventory_hostname == item.remote_device
   loop_control:
-    label: "{{ item.local_interface }}"
+    label: >-
+      {{ item.local_interface if item.local_device == inventory_hostname
+         else item.remote_interface }}
 
 - name: Configure fabric interface MTU
   cisco.nxos.nxos_interfaces:
     config:
-      - name: "{{ item.local_interface }}"
+      - name: "{{ item.local_interface if item.local_device == inventory_hostname else item.remote_interface }}"
         mtu: "{{ fabric.underlay.mtu }}"
   loop: "{{ topology.fabric_links }}"
-  when: item.local_device == inventory_hostname
+  when:
+    - inventory_hostname == item.local_device or inventory_hostname == item.remote_device
   loop_control:
-    label: "{{ item.local_interface }}"
+    label: >-
+      {{ item.local_interface if item.local_device == inventory_hostname
+         else item.remote_interface }}
 
 - name: Configure IP unnumbered on fabric interfaces
   cisco.nxos.nxos_config:
     parents:
-      - "interface {{ item.local_interface }}"
+      - "interface {{ item.local_interface if item.local_device == inventory_hostname else item.remote_interface }}"
     lines:
       - "ip unnumbered loopback0"
   loop: "{{ topology.fabric_links }}"
-  when: item.local_device == inventory_hostname
+  when:
+    - inventory_hostname == item.local_device or inventory_hostname == item.remote_device
   loop_control:
-    label: "{{ item.local_interface }}"
+    label: >-
+      {{ item.local_interface if item.local_device == inventory_hostname
+         else item.remote_interface }}

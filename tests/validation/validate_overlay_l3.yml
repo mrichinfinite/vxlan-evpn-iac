@@ -14,190 +14,291 @@
     - name: Gather TENANT VRF configuration
       cisco.nxos.nxos_command:
         commands:
-          - show running-config | section "vrf context TENANT"
+          - "show running-config vrf {{ fabric.overlay.l3_vni.vrf }}"
       register: tenant_vrf
+      changed_when: false
 
     - name: Validate TENANT VRF exists
       ansible.builtin.assert:
         that:
-          - tenant_vrf.stdout[0] is search("vrf context TENANT")
-        fail_msg: "TENANT VRF is missing on {{ inventory_hostname }}."
-        success_msg: "TENANT VRF is present on {{ inventory_hostname }}."
+          - tenant_vrf.stdout[0] is search("vrf context " ~ fabric.overlay.l3_vni.vrf)
+        fail_msg: >
+          {{ fabric.overlay.l3_vni.vrf }} VRF is missing on
+          {{ inventory_hostname }}.
+        success_msg: >
+          {{ fabric.overlay.l3_vni.vrf }} VRF is present on
+          {{ inventory_hostname }}.
 
     - name: Validate TENANT L3VNI
       ansible.builtin.assert:
         that:
-          - tenant_vrf.stdout[0] is search("vni 100030")
-        fail_msg: "TENANT L3VNI 100030 is missing on {{ inventory_hostname }}."
-        success_msg: "TENANT L3VNI 100030 is present on {{ inventory_hostname }}."
+          - tenant_vrf.stdout[0] is search(
+              "vni " ~ (fabric.overlay.l3_vni.vni | string)
+            )
+        fail_msg: >
+          {{ fabric.overlay.l3_vni.vrf }} L3VNI
+          {{ fabric.overlay.l3_vni.vni }} is missing on
+          {{ inventory_hostname }}.
+        success_msg: >
+          {{ fabric.overlay.l3_vni.vrf }} L3VNI
+          {{ fabric.overlay.l3_vni.vni }} is present on
+          {{ inventory_hostname }}.
 
     - name: Validate TENANT RD
       ansible.builtin.assert:
         that:
           - tenant_vrf.stdout[0] is search("rd auto")
-        fail_msg: "TENANT VRF RD auto is missing on {{ inventory_hostname }}."
-        success_msg: "TENANT VRF RD auto is present on {{ inventory_hostname }}."
-
-    - name: Gather TENANT IPv4 address-family configuration
-      cisco.nxos.nxos_command:
-        commands:
-          - show running-config | section "vrf context TENANT"
-      register: tenant_vrf_af
+        fail_msg: >
+          {{ fabric.overlay.l3_vni.vrf }} VRF RD auto is missing on
+          {{ inventory_hostname }}.
+        success_msg: >
+          {{ fabric.overlay.l3_vni.vrf }} VRF RD auto is present on
+          {{ inventory_hostname }}.
 
     - name: Validate TENANT IPv4 address family
       ansible.builtin.assert:
         that:
-          - tenant_vrf_af.stdout[0] is search("address-family ipv4 unicast")
-        fail_msg: "TENANT IPv4 unicast address family is missing on {{ inventory_hostname }}."
-        success_msg: "TENANT IPv4 unicast address family is present on {{ inventory_hostname }}."
+          - tenant_vrf.stdout[0] is search("address-family ipv4 unicast")
+        fail_msg: >
+          {{ fabric.overlay.l3_vni.vrf }} IPv4 unicast address family is
+          missing on {{ inventory_hostname }}.
+        success_msg: >
+          {{ fabric.overlay.l3_vni.vrf }} IPv4 unicast address family is
+          present on {{ inventory_hostname }}.
 
     - name: Validate EVPN route-target auto configuration
       ansible.builtin.assert:
         that:
-          - tenant_vrf_af.stdout[0] is search("route-target both auto evpn")
-        fail_msg: "TENANT EVPN route-target auto configuration is missing on {{ inventory_hostname }}."
-        success_msg: "TENANT EVPN route-target auto configuration is correct on {{ inventory_hostname }}."
+          - tenant_vrf.stdout[0] is search("route-target both auto evpn")
+        fail_msg: >
+          {{ fabric.overlay.l3_vni.vrf }} EVPN route-target auto
+          configuration is missing on {{ inventory_hostname }}.
+        success_msg: >
+          {{ fabric.overlay.l3_vni.vrf }} EVPN route-target auto
+          configuration is correct on {{ inventory_hostname }}.
 
-    - name: Gather VLAN configuration
+    - name: Gather L3VNI VLAN configuration
       cisco.nxos.nxos_command:
         commands:
-          - show running-config | section "^vlan 30"
-      register: vlan30_config
+          - "show running-config | section ^vlan.{{ fabric.overlay.l3_vni.vlan | int }}"
+      register: l3vni_vlan_config
+      changed_when: false
 
-    - name: Validate VLAN 30 remains mapped to the L3VNI
+    - name: Validate L3VNI VLAN exists
       ansible.builtin.assert:
         that:
-          - vlan30_config.stdout[0] is search("vlan 30")
-          - vlan30_config.stdout[0] is search("vn-segment 100030")
-        fail_msg: "VLAN 30 L3VNI mapping is incorrect on {{ inventory_hostname }}."
-        success_msg: "VLAN 30 correctly maps to L3VNI 100030 on {{ inventory_hostname }}."
+          - l3vni_vlan_config.stdout[0] is search(
+              "vlan " ~ (fabric.overlay.l3_vni.vlan | string)
+            )
+        fail_msg: >
+          L3VNI VLAN {{ fabric.overlay.l3_vni.vlan }} is missing on
+          {{ inventory_hostname }}.
+        success_msg: >
+          L3VNI VLAN {{ fabric.overlay.l3_vni.vlan }} is present on
+          {{ inventory_hostname }}.
+
+    - name: Validate L3VNI VLAN mapping
+      ansible.builtin.assert:
+        that:
+          - l3vni_vlan_config.stdout[0] is search(
+              "vn-segment " ~ (fabric.overlay.l3_vni.vni | string)
+            )
+        fail_msg: >
+          VLAN {{ fabric.overlay.l3_vni.vlan }} does not map to L3VNI
+          {{ fabric.overlay.l3_vni.vni }} on {{ inventory_hostname }}.
+        success_msg: >
+          VLAN {{ fabric.overlay.l3_vni.vlan }} correctly maps to L3VNI
+          {{ fabric.overlay.l3_vni.vni }} on {{ inventory_hostname }}.
 
     - name: Validate L3VNI SVI configuration
       cisco.nxos.nxos_command:
         commands:
           - "show running-config interface Vlan{{ fabric.overlay.l3_vni.vlan | int }}"
       register: l3vni_svi_config
+      changed_when: false
 
     - name: Assert L3VNI SVI configuration
       ansible.builtin.assert:
         that:
-          - "'interface Vlan' ~ (fabric.overlay.l3_vni.vlan | string) in l3vni_svi_config.stdout[0]"
+          - >
+            "interface Vlan"
+            ~ (fabric.overlay.l3_vni.vlan | string)
+            in l3vni_svi_config.stdout[0]
           - "'no shutdown' in l3vni_svi_config.stdout[0]"
-          - "'vrf member ' ~ fabric.overlay.l3_vni.vrf in l3vni_svi_config.stdout[0]"
+          - >
+            "vrf member "
+            ~ fabric.overlay.l3_vni.vrf
+            in l3vni_svi_config.stdout[0]
           - "'no ip redirects' in l3vni_svi_config.stdout[0]"
           - "'ip forward' in l3vni_svi_config.stdout[0]"
         fail_msg: >-
           L3VNI SVI Vlan{{ fabric.overlay.l3_vni.vlan | int }}
-          does not match the intended L3VNI SVI configuration.
+          does not match the intended L3VNI SVI configuration on
+          {{ inventory_hostname }}.
+        success_msg: >-
+          L3VNI SVI Vlan{{ fabric.overlay.l3_vni.vlan | int }}
+          is correctly configured on {{ inventory_hostname }}.
 
     - name: Gather L3VNI NVE configuration
       cisco.nxos.nxos_command:
         commands:
-          - show running-config | section "^interface nve1"
+          - "show running-config | section ^interface.nve1"
       register: nve_config
+      changed_when: false
 
     - name: Validate L3VNI NVE membership
       ansible.builtin.assert:
         that:
-          - nve_config.stdout[0] is search("member vni 100030 associate-vrf")
-        fail_msg: "L3VNI 100030 NVE membership is missing on {{ inventory_hostname }}."
-        success_msg: "L3VNI 100030 NVE membership is correct on {{ inventory_hostname }}."
+          - >
+            nve_config.stdout[0] is search(
+              "member vni "
+              ~ (fabric.overlay.l3_vni.vni | string)
+              ~ " associate-vrf"
+            )
+        fail_msg: >
+          L3VNI {{ fabric.overlay.l3_vni.vni }} NVE membership is missing
+          on {{ inventory_hostname }}.
+        success_msg: >
+          L3VNI {{ fabric.overlay.l3_vni.vni }} NVE membership is correct
+          on {{ inventory_hostname }}.
 
     - name: Gather tenant route policy
       cisco.nxos.nxos_command:
         commands:
-          - show running-config | section "^route-map TAGGED"
+          - "show running-config | section ^route-map.TAGGED"
       register: tagged_route_map
+      changed_when: false
 
     - name: Validate TAGGED route policy
       ansible.builtin.assert:
         that:
           - tagged_route_map.stdout[0] is search("route-map TAGGED permit 10")
           - tagged_route_map.stdout[0] is search("match tag 12345")
-        fail_msg: "TAGGED route-map or tag 12345 match is missing on {{ inventory_hostname }}."
-        success_msg: "TAGGED route policy correctly matches route tag 12345 on {{ inventory_hostname }}."
+        fail_msg: >
+          TAGGED route-map or tag 12345 match is missing on
+          {{ inventory_hostname }}.
+        success_msg: >
+          TAGGED route policy correctly matches route tag 12345 on
+          {{ inventory_hostname }}.
 
     - name: Gather TENANT BGP IPv4 redistribution configuration
       cisco.nxos.nxos_command:
         commands:
-          - show running-config | section "router bgp"
+          - "show running-config | section router.bgp"
       register: bgp_config
+      changed_when: false
+
+    - name: Validate TENANT BGP VRF configuration
+      ansible.builtin.assert:
+        that:
+          - bgp_config.stdout[0] is search(
+              "vrf " ~ fabric.overlay.l3_vni.vrf
+            )
+        fail_msg: >
+          BGP VRF {{ fabric.overlay.l3_vni.vrf }} configuration is missing
+          on {{ inventory_hostname }}.
+        success_msg: >
+          BGP VRF {{ fabric.overlay.l3_vni.vrf }} configuration is present
+          on {{ inventory_hostname }}.
 
     - name: Validate TENANT direct route redistribution
       ansible.builtin.assert:
         that:
           - >
             bgp_config.stdout[0] is search(
-              "vrf TENANT"
-            )
-          - >
-            bgp_config.stdout[0] is search(
               "redistribute direct route-map TAGGED"
             )
-        fail_msg: "TENANT direct route redistribution with TAGGED policy is missing on {{ inventory_hostname }}."
-        success_msg: "TENANT direct routes are redistributed with TAGGED policy on {{ inventory_hostname }}."
+        fail_msg: >
+          TENANT direct route redistribution with TAGGED policy is missing
+          on {{ inventory_hostname }}.
+        success_msg: >
+          TENANT direct routes are redistributed with TAGGED policy on
+          {{ inventory_hostname }}.
 
     - name: Gather tenant SVI configuration
       cisco.nxos.nxos_command:
         commands:
-          - show running-config | section "^interface Vlan10"
-          - show running-config | section "^interface Vlan20"
+          - "show running-config interface Vlan{{ item.key }}"
+      loop: "{{ devices[inventory_hostname].overlay.svi | dict2items }}"
       register: svi_config
+      changed_when: false
+      loop_control:
+        label: "Vlan{{ item.key }}"
 
-    - name: Validate VLAN 10 SVI
+    - name: Validate tenant SVI configuration
       ansible.builtin.assert:
         that:
           - >
-            inventory_hostname != "L-1"
+            "interface Vlan"
+            ~ (item.item.key | string)
+            in item.stdout[0]
+          - "'no shutdown' in item.stdout[0]"
+          - >
+            "vrf member "
+            ~ fabric.overlay.l3_vni.vrf
+            in item.stdout[0]
+          - >
+            "ip address "
+            ~ item.item.value.address
+            in item.stdout[0]
+          - >
+            (
+              item.item.value.tag is not defined
+            )
             or
             (
-              svi_config.stdout[0] is search("vrf member TENANT")
-              and
-              svi_config.stdout[0] is search("192.168.10.254/24")
-              and
-              svi_config.stdout[0] is search("tag 12345")
-              and
-              svi_config.stdout[0] is search("fabric forwarding mode anycast-gateway")
+              "ip address "
+              ~ item.item.value.address
+              ~ " tag "
+              ~ (item.item.value.tag | string)
+              in item.stdout[0]
             )
           - >
-            inventory_hostname != "L-2"
-            or
             (
-              svi_config.stdout[0] is search("vrf member TENANT")
-              and
-              svi_config.stdout[0] is search("192.168.10.254/24")
-              and
-              svi_config.stdout[0] is search("tag 12345")
-              and
-              svi_config.stdout[0] is search("fabric forwarding mode anycast-gateway")
+              item.item.value.anycast_gateway
+              | default(false)
+              | bool
             )
-        fail_msg: "VLAN 10 SVI validation failed on {{ inventory_hostname }}."
-        success_msg: "VLAN 10 SVI validation passed on {{ inventory_hostname }}."
+            ==
+            (
+              "fabric forwarding mode anycast-gateway"
+              in item.stdout[0]
+            )
+        fail_msg: >
+          Tenant SVI Vlan{{ item.item.key }} does not match the intended
+          configuration on {{ inventory_hostname }}.
+        success_msg: >
+          Tenant SVI Vlan{{ item.item.key }} is correctly configured on
+          {{ inventory_hostname }}.
+      loop: "{{ svi_config.results }}"
+      loop_control:
+        label: "Vlan{{ item.item.key }}"
 
-    - name: Validate VLAN 20 SVI
-      ansible.builtin.assert:
-        that:
-          - svi_config.stdout[1] is search("vrf member TENANT")
-          - svi_config.stdout[1] is search("192.168.20.254/24")
-          - svi_config.stdout[1] is search("tag 12345")
-          - svi_config.stdout[1] is search("fabric forwarding mode anycast-gateway")
-        fail_msg: "VLAN 20 SVI validation failed on {{ inventory_hostname }}."
-        success_msg: "VLAN 20 SVI validation passed on {{ inventory_hostname }}."
-      when: inventory_hostname == "L-2"
-
-    - name: Gather anycast gateway configuration
+    - name: Gather anycast gateway MAC configuration
       cisco.nxos.nxos_command:
         commands:
-          - show running-config | section "^fabric forwarding"
+          - show running-config | include "fabric forwarding anycast-gateway-mac"
       register: anycast_config
+      changed_when: false
 
     - name: Validate anycast gateway MAC
       ansible.builtin.assert:
         that:
-          - anycast_config.stdout[0] is search("0000.1234.5678")
-        fail_msg: "Anycast gateway MAC is incorrect or missing on {{ inventory_hostname }}."
-        success_msg: "Anycast gateway MAC is correct on {{ inventory_hostname }}."
+          - >
+            anycast_config.stdout[0] is search(
+              "fabric forwarding anycast-gateway-mac "
+              ~ fabric.overlay.anycast_gateway_mac
+            )
+        fail_msg: >
+          Anycast gateway MAC {{ fabric.overlay.anycast_gateway_mac }}
+          is incorrect or missing on {{ inventory_hostname }}.
+        success_msg: >
+          Anycast gateway MAC {{ fabric.overlay.anycast_gateway_mac }}
+          is correct on {{ inventory_hostname }}.
 
     - name: Section 3 validation complete
       ansible.builtin.debug:
-        msg: "TENANT VRF, L3VNI, NVE, redistribution, route policy, SVIs, and anycast gateway validation passed on {{ inventory_hostname }}."
+        msg: >
+          TENANT VRF, L3VNI, L3VNI VLAN, L3VNI SVI, NVE membership,
+          redistribution, route policy, tenant SVIs, and anycast gateway
+          validation passed on {{ inventory_hostname }}.

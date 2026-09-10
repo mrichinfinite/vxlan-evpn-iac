@@ -84,16 +84,9 @@
     - name: Validate PIM RP configuration
       ansible.builtin.assert:
         that:
-          - >
-            inventory_hostname != "S-1"
-            or
-            (
-              pim_rp_output.stdout[0] is search(fabric.multicast.rp.address)
-              and
-              pim_rp_output.stdout[0] is search(fabric.multicast.rp.group_list)
-              and
-              pim_rp_output.stdout[0] is search("bidir")
-            )
+          - pim_rp_output.stdout[0] is search(fabric.multicast.rp.address)
+          - pim_rp_output.stdout[0] is search(fabric.multicast.rp.group_list)
+          - pim_rp_output.stdout[0] is search("bidir")
         fail_msg: >
           PIM RP validation failed on {{ inventory_hostname }}.
           Expected RP {{ fabric.multicast.rp.address }},
