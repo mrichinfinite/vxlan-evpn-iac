@@ -2,7 +2,7 @@
 
 Infrastructure as Code (IaC) project for building and validating a Cisco Nexus VXLAN BGP EVPN fabric using Ansible and Cisco Modeling Labs (CML).
 
-The project uses GitHub as the authoritative source of desired state, Ansible for configuration implementation, GitHub Actions for automated CI validation, pull requests for human review, and separate deployment and validation workflows.
+This project uses GitHub as the single source of truth, Ansible for configuration implementation, GitHub Actions for automated CI validation, pull requests for human review, and separate deployment and validation workflows.
 
 ## Project Goals
 
