@@ -11,3 +11,10 @@
 
   roles:
     - role: 03_overlay_l3
+
+  post_tasks:
+    - name: Save running configuration to startup configuration
+      cisco.nxos.nxos_command:
+        commands:
+          - copy running-config startup-config
+      changed_when: false
