@@ -8,6 +8,9 @@
 - name: Configure L3VNI shared VLAN
   ansible.builtin.import_tasks: shared_vlan.yml
 
+- name: Configure L3VNI SVI
+  ansible.builtin.import_tasks: l3vni_svi.yml
+
 - name: Configure anycast gateway and tenant SVIs
   ansible.builtin.import_tasks: anycast_gateway.yml
 
