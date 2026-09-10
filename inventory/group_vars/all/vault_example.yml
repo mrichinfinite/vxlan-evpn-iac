@@ -1,0 +1,9 @@
+---
+# Local-only Ansible Vault variables.
+#
+# This file must not be committed to the public repository.
+# Replace the placeholder values with the credentials used by the
+# local CML development environment.
+
+ansible_user: "<CML_USERNAME>"
+ansible_password: "<CML_PASSWORD>"
