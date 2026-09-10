@@ -1,0 +1,16 @@
+---
+- name: Configure tagged tenant route policy
+  cisco.nxos.nxos_config:
+    parents:
+      - "route-map TAGGED permit 10"
+    lines:
+      - "match tag 12345"
+
+- name: Configure TENANT direct route redistribution into BGP
+  cisco.nxos.nxos_config:
+    parents:
+      - "router bgp {{ fabric.bgp.asn }}"
+      - "vrf {{ fabric.overlay.l3_vni.vrf }}"
+      - "address-family ipv4 unicast"
+    lines:
+      - "redistribute direct route-map TAGGED"

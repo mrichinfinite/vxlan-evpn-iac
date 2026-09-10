@@ -1,16 +1,12 @@
 ---
-- name: Configure overlay VLANs
-  ansible.builtin.import_tasks:
-    file: vlans.yml
+- name: Configure L2 overlay VLANs
+  ansible.builtin.import_tasks: vlans.yml
 
-- name: Configure VLAN to VNI mappings
-  ansible.builtin.import_tasks:
-    file: vni_mappings.yml
+- name: Configure L2 VLAN to VNI mappings
+  ansible.builtin.import_tasks: vni_mappings.yml
+
+- name: Configure L2 NVE
+  ansible.builtin.import_tasks: nve.yml
 
 - name: Configure EVPN L2 VNIs
-  ansible.builtin.import_tasks:
-    file: evpn.yml
-
-- name: Configure SVI and anycast gateway
-  ansible.builtin.import_tasks:
-    file: anycast_gateway.yml
+  ansible.builtin.import_tasks: evpn.yml

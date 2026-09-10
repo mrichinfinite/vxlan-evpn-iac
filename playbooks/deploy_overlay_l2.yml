@@ -1,5 +1,5 @@
 ---
-- name: Deploy VXLAN EVPN overlay
+- name: Deploy VXLAN EVPN L2 overlay
   hosts: leaves
   gather_facts: false
 
@@ -11,4 +11,3 @@
 
   roles:
     - role: 02_overlay_l2
-    - role: 03_overlay_l3

@@ -1,0 +1,22 @@
+---
+- name: Configure NVE interface for L2 overlay
+  cisco.nxos.nxos_config:
+    parents:
+      - "interface nve1"
+    lines:
+      - no shutdown
+      - host-reachability protocol bgp
+      - source-interface loopback1
+
+- name: Configure L2 VNI membership on NVE
+  cisco.nxos.nxos_config:
+    parents:
+      - "interface nve1"
+      - "member vni {{ fabric.overlay.vlans[item].vni | int }}"
+    lines:
+      - "mcast-group {{ fabric.overlay.vlans[item].multicast_group }}"
+  loop: "{{ devices[inventory_hostname].overlay.vlans }}"
+  when:
+    - item | int != fabric.overlay.l3_vni.vlan | int
+  loop_control:
+    label: "NVE L2 VNI {{ fabric.overlay.vlans[item].vni }}"
