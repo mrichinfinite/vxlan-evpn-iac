@@ -1,3 +1,5 @@
 ---
+# Ansible collections required by this project.
+
 collections:
   - name: cisco.nxos

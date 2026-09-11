@@ -1,3 +1,5 @@
+# Python dependencies required to develop, validate, and run this project locally.
+
 ansible
 ansible-core
 ansible-pylibssh

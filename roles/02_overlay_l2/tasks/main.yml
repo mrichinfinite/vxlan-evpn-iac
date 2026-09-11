@@ -8,5 +8,5 @@
 - name: Configure L2 NVE
   ansible.builtin.import_tasks: nve.yml
 
-- name: Configure EVPN L2 VNIs
+- name: Configure EVPN L2VNIs
   ansible.builtin.import_tasks: evpn.yml

@@ -8,7 +8,7 @@
       - host-reachability protocol bgp
       - source-interface loopback1
 
-- name: Configure L2 VNI membership on NVE
+- name: Configure L2VNI membership on NVE
   cisco.nxos.nxos_config:
     parents:
       - "interface nve1"
@@ -19,4 +19,4 @@
   when:
     - item | int != fabric.overlay.l3_vni.vlan | int
   loop_control:
-    label: "NVE L2 VNI {{ fabric.overlay.vlans[item].vni }}"
+    label: "NVE L2VNI {{ fabric.overlay.vlans[item].vni }}"

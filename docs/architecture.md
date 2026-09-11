@@ -13,5 +13,5 @@ The current development topology consists of one spine and two leaves:
            /       \
           /         \
        L-1           L-2
-      VTEP           VTEP
+Leaf / VTEP     Leaf / VTEP
   10.0.0.1        10.0.0.2
