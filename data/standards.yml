@@ -108,7 +108,7 @@ standards:
 
     ospf:
 
-      process: UNDERLAY
+      process: 1
 
       area:
         required: 0.0.0.0
@@ -232,3 +232,5 @@ standards:
 
     - section: "05_multisite"
       optional: true
+
+    - section: "06_endpoints"

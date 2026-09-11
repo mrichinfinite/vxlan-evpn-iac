@@ -74,7 +74,7 @@ The default underlay is:
 | Function | Standard |
 |---|---|
 | IGP | OSPF |
-| Multicast | PIM BiDir |
+| Multicast | BIDIR-PIM |
 | OSPF Area | 0 |
 | Fabric MTU | 9216 |
 
@@ -88,7 +88,7 @@ Loopback0 provides:
 
 - OSPF router ID
 - BGP router ID
-- underlay identity
+- Underlay identity
 
 ### Loopback1
 
@@ -103,10 +103,10 @@ The project intentionally separates these responsibilities.
 
 The overlay uses:
 
-- BGP EVPN
-- VXLAN
+- EVPN control plane
+- VXLAN data plane
 - L2VNIs for Layer 2 segments
-- L3VNI for tenant routing
+- L3VNI for Layer 3 segments / tenant routing
 - Anycast gateway
 - Symmetric IRB by default
 
@@ -114,7 +114,7 @@ Any deviation from symmetric IRB requires explicit design approval.
 
 ## Multicast Standards
 
-PIM BiDir is the standard multicast mode.
+BIDIR-PIM is the standard multicast mode.
 
 The current lab uses a single RP.
 
@@ -142,7 +142,7 @@ Multi-site configuration must not be introduced into the current single-site lab
 
 ## Role Standards
 
-Ansible roles implement desired state.
+Ansible roles implement the desired state.
 
 Roles should:
 

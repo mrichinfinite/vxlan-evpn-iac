@@ -14,7 +14,7 @@ The goal is to make every infrastructure change:
 - independently verifiable
 - recoverable
 
-GitHub is the single source of truth for desired state.
+GitHub is the single source of truth for the desired state.
 
 ## Standard Workflow
 

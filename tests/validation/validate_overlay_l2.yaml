@@ -56,7 +56,7 @@
         msg: "Overlay VLAN validation passed on {{ inventory_hostname }}."
 
 
-- name: Validate VLAN to VNI mappings and EVPN L2 VNIs
+- name: Validate VLAN to VNI mappings and EVPN L2VNIs
   hosts: leaves
   gather_facts: false
 
@@ -140,5 +140,5 @@
     - name: Section 2 Increment 2 validation complete
       ansible.builtin.debug:
         msg: >
-          VLAN-to-VNI mappings and EVPN L2 VNIs validated successfully
+          VLAN-to-VNI mappings and EVPN L2VNIs validated successfully
           on {{ inventory_hostname }}.

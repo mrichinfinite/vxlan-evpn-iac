@@ -29,13 +29,53 @@ The reference environment consists of:
 - **H-2** — Ubuntu endpoint attached to L-2, VLAN 20
 - **H-3** — Ubuntu endpoint attached to L-2, VLAN 10
 
-The reference CML topology is provided in:
+- NX-OS version 10.6(2)
+- Ubuntu version 24.04.4 LTS
+
+## Topology
+
+![VXLAN BGP EVPN topology](docs/vxlan-evpn-topology.png)
+
+## Lab
+
+The CML lab provides the development environment used to exercise the automation for this project. The infrastructure definition maintained by Ansible remains separate from the CML lab definition.
+
+The reference CML lab is provided in:
 
 ```text
 cml/vxlan-bgp-evpn-dev-lab.yml
 ```
 
-The CML lab provides the development environment used to exercise the automation. The infrastructure definition maintained by Ansible remains separate from the CML topology definition.
+Import that file into CML to start testing.
+
+The topology contains:
+
+-  Three Cisco Nexus 9000v nodes
+  -  S-1
+  -  L-1
+  -  L-2
+-  Three Ubuntu endpoint nodes
+  -  H-1
+  -  H-2
+  -  H-3
+-  An unmanaged management switch
+-  An external connector
+
+The endpoint attachments are:
+
+```text
+H-1 -> L-1 Ethernet1/5 -> VLAN 10
+H-2 -> L-2 Ethernet1/5 -> VLAN 20
+H-3 -> L-2 Ethernet1/6 -> VLAN 10
+```
+
+The CML lab definition describes the development environment and physical/logical lab connectivity.
+
+It is intentionally separate from `data/topology.yml`, which describes the infrastructure topology consumed by the Ansible automation.
+
+The external connector is environment-dependent and may require adjustment for a particular CML installation.
+
+The Ubuntu endpoint credentials in the reference lab are intentionally simple and are suitable only for a disposable development environment.
 
 ---
 
@@ -44,20 +84,20 @@ The CML lab provides the development environment used to exercise the automation
 The fabric uses:
 
 -  Cisco Nexus 9000v
--  BGP EVPN
 -  VXLAN
--  OSPF underlay
--  PIM sparse mode with Bidirectional PIM
--  BGP iBGP overlay
--  BGP EVPN route reflection
+-  MP-BGP EVPN
+-  OSPF
+-  PIM-SM with BIDIR-PIM
+-  Route reflection
 -  VLAN-based Layer 2 VNIs
 -  Symmetric IRB
 -  Anycast gateway
 -  Tenant VRF
 -  Layer 3 VNI
--  Dedicated loopbacks for underlay identity and VTEP/NVE source
+-  Dedicated loopbacks for underlay identity
+-  Dedicated loopbacks for VTEP/NVE source
 -  IP unnumbered fabric links
--  9216-byte fabric MTU
+-  MTU size of 9216 bytes on fabric links
 
 ### Routing
 
@@ -65,9 +105,6 @@ The underlay uses:
 
 -  OSPF area 0
 -  Loopback0 for router identity
--  IP unnumbered fabric interfaces
--  PIM sparse mode
--  Bidirectional PIM
 -  S-1 as the multicast rendezvous point
 
 The overlay uses:
@@ -88,21 +125,18 @@ The reference tenant uses:
 -  Shared L3VNI VLAN: `30`
 -  Anycast gateway MAC: `0000.1234.5678`
 
-The reference L2 VNIs are:
+The reference L2VNIs are:
 
-| VLANVNIPurpose |        |                         |
+| VLAN           | VNI    | Purpose                 |
 | -------------- | ------ | ----------------------- |
 | 10             | 100010 | Tenant endpoint network |
 | 20             | 100020 | Tenant endpoint network |
-| 30             | 100030 | Shared L3VNI VLAN       |
-
-VLAN 30 is owned by the Layer 3 overlay implementation rather than the Layer 2 overlay implementation.
 
 ---
 
 ## Repository Architecture
 
-The project is organized into incremental feature sections:
+The project is organized into incremental configuration sections:
 
 ```text
 00_features
@@ -123,8 +157,7 @@ Examples include:
 -  OSPF
 -  PIM
 -  BGP
--  VXLAN
--  EVPN
+-  NV Overlay EVPN
 -  VLAN-based VNI support
 -  Fabric forwarding
 -  SVI support
@@ -144,7 +177,7 @@ Implements:
 -  Bidirectional PIM
 -  Multicast RP
 -  BGP
--  BGP EVPN
+-  L2VPN EVPN address family with extended communities
 -  Route reflection
 
 This section intentionally does **not** configure VNIs, SVIs, tenant VRFs, or endpoint access ports.
@@ -153,10 +186,10 @@ This section intentionally does **not** configure VNIs, SVIs, tenant VRFs, or en
 
 Implements:
 
--  Tenant L2 VLANs
+-  VLANs
 -  VLAN-to-VNI mappings
--  EVPN L2 VNIs
--  NVE L2 VNI membership
+-  EVPN L2VNIs
+-  NVE L2VNI membership
 
 The shared L3VNI VLAN is intentionally excluded from this section and is owned by Section 03.
 
@@ -202,12 +235,12 @@ Important files include:
 
 ```text
 data/
-├── standards.yml
-├── fabric.yml
 ├── devices.yml
-├── topology.yml
+├── fabric.yml
 ├── overlay.yml
-└── policies.yml
+├── policies.yml
+├── standards.yml
+└── topology.yml
 ```
 
 These files describe the intended state of the fabric.
@@ -218,7 +251,7 @@ The Ansible roles consume this data rather than embedding device-specific config
 
 The fabric topology is modeled explicitly in `data/topology.yml`.
 
-Fabric links define both endpoints of the connection, including:
+Fabric links define both ends of the connection, including:
 
 -  local device
 -  local interface
@@ -237,8 +270,8 @@ Before running the automation, the target devices must already provide:
 
 -  Management IP connectivity
 -  SSH access
--  Valid Ansible credentials
--  Reachability from the machine running Ansible
+-  Valid credentials
+-  Reachability from a machine running Ansible
 
 Once those prerequisites exist, Ansible manages the intended fabric configuration.
 
@@ -305,7 +338,7 @@ If credentials are ever accidentally committed, they should be considered compro
 
 ## Deployment
 
-The configuration is deployed incrementally by section.
+The configuration is deployed incrementally in sections.
 
 ### Section 00
 
@@ -330,6 +363,14 @@ ansible-playbook playbooks/deploy_overlay_l2.yml
 ```text
 ansible-playbook playbooks/deploy_overlay_l3.yml
 ```
+
+### Section 04
+
+Not in the current scope.
+
+### Section 05
+
+Not in the current scope.
 
 ### Section 06
 
@@ -370,6 +411,14 @@ ansible-playbook tests/validation/validate_overlay_l2.yml
 ```text
 ansible-playbook tests/validation/validate_overlay_l3.yml
 ```
+
+### Section 04
+
+Not in the current scope.
+
+### Section 05
+
+Not in the current scope.
 
 ### Section 06
 
@@ -435,7 +484,7 @@ Repeat deployment
 Confirm idempotency
 ```
 
-The development CML environment has been used to verify deployment, validation, and repeat-deployment behavior across the complete reference topology.
+The development CML environment referenced in this repository has been used to verify deployment, validation, and repeat-deployment behavior across the entire topology.
 
 ---
 
@@ -461,7 +510,7 @@ Pull Request
 GitHub Actions Validation
         |
         v
-Review
+Human Review
         |
         v
 Merge to main
@@ -478,15 +527,14 @@ The CML environment is treated as the development/test platform, while GitHub re
 ## Repository Structure
 
 ```text
-.
+vxlan-evpn-iac/
+
 ├── .github/
 │   └── workflows/
 │       └── ci.yml
 │
 ├── cml/
-│   └── vxlan-bgp-evpn-dev-lab.yml
-│
-├── collections/
+│   └── vxlan-bgp-evpn-dev-lab.yaml
 │
 ├── data/
 │   ├── devices.yml
@@ -497,12 +545,15 @@ The CML environment is treated as the development/test platform, while GitHub re
 │   └── topology.yml
 │
 ├── docs/
+│   ├── architecture.md
+│   ├── change-governance.md
+│   ├── standards.md
 │   └── vxlan-evpn-topology.png
 │
 ├── inventory/
-│   ├── examples/
-│   │   └── vault_example.yml
-│   └── hosts_example.yml
+│   └── examples/
+│       ├── hosts_example.yml
+│       └── vault_example.yml
 │
 ├── playbooks/
 │   ├── deploy_endpoints.yml
@@ -513,62 +564,67 @@ The CML environment is treated as the development/test platform, while GitHub re
 │
 ├── roles/
 │   ├── 00_features/
+│   │   └── tasks/
+│   │       ├── common.yml
+│   │       ├── evpn.yml
+│   │       ├── leaf.yml
+│   │       ├── main.yml
+│   │       └── optional.yml
+│   │
 │   ├── 01_underlay/
+│   │   └── tasks/
+│   │       ├── bgp.yml
+│   │       ├── interfaces.yml
+│   │       ├── main.yml
+│   │       ├── ospf.yml
+│   │       └── pim.yml
+│   │
 │   ├── 02_overlay_l2/
+│   │   └── tasks/
+│   │       ├── evpn.yml
+│   │       ├── main.yml
+│   │       ├── nve.yml
+│   │       ├── vlans.yml
+│   │       └── vni_mappings.yml
+│   │
 │   ├── 03_overlay_l3/
+│   │   └── tasks/
+│   │       ├── anycast_gateway.yml
+│   │       ├── l3vni_svi.yml
+│   │       ├── main.yml
+│   │       ├── nve.yml
+│   │       ├── redistribution.yml
+│   │       ├── shared_vlan.yml
+│   │       ├── vrf_af.yml
+│   │       └── vrf.yml
+│   │
+│   ├── 04_vpc/
+│   │   └── .gitkeep
+│   │
+│   ├── 05_multisite/
+│   │   └── .gitkeep
+│   │
 │   └── 06_endpoints/
+│       └── tasks/
+│           ├── access_ports.yml
+│           ├── interfaces.yml
+│           └── main.yml
 │
 ├── tests/
 │   └── validation/
 │       ├── validate_endpoints.yml
 │       ├── validate_features.yml
-│       ├── validate_overlay_l2.yml
+│       ├── validate_overlay_l2.yaml
 │       ├── validate_overlay_l3.yml
 │       └── validate_underlay.yml
 │
 ├── .gitignore
+├── ansible.cfg
 ├── README.md
+├── requirements.txt
+├── requirements.yml
 └── SECURITY.md
 ```
-
----
-
-## CML Development Lab
-
-The reference lab is provided as:
-
-```text
-cml/vxlan-bgp-evpn-dev-lab.yml
-```
-
-The topology contains:
-
--  Three Cisco Nexus 9000v nodes
-  -  S-1
-  -  L-1
-  -  L-2
--  Three Ubuntu endpoint nodes
-  -  H-1
-  -  H-2
-  -  H-3
--  An unmanaged management switch
--  An external connector
-
-The endpoint attachments are:
-
-```text
-H-1 -> L-1 Ethernet1/5 -> VLAN 10
-H-2 -> L-2 Ethernet1/5 -> VLAN 20
-H-3 -> L-2 Ethernet1/6 -> VLAN 10
-```
-
-The CML lab definition describes the development environment and physical/logical lab connectivity.
-
-It is intentionally separate from `data/topology.yml`, which describes the infrastructure topology consumed by the Ansible automation.
-
-The external connector is environment-dependent and may require adjustment for a particular CML installation.
-
-The Ubuntu endpoint credentials in the reference lab are intentionally simple and are suitable only for a disposable development environment.
 
 ---
 
@@ -597,7 +653,7 @@ See `SECURITY.md` for the project's security guidance.
 
 The current reference implementation includes:
 
--  GitHub source of truth
+-  GitHub SSOT
 -  Modular Ansible role structure
 -  Section 00 feature automation
 -  Section 01 underlay and BGP EVPN control plane
@@ -607,13 +663,18 @@ The current reference implementation includes:
 -  Separate validation playbooks
 -  Idempotent deployment
 -  Startup configuration persistence
--  GitHub Actions repository validation
--  Public repository security cleanup
+-  GitHub Actions repository validation through CI workflows
 -  Reference CML development lab
 -  Greenfield deployment testing
 -  Repeat-deployment/idempotency testing
 
-Future sections such as vPC and multisite remain intentionally reserved and are not required for the current reference topology.
+Future sections such as Section 04 - vPC and Section 05 - multisite remain intentionally reserved and are not required for the current reference topology.
+
+---
+
+## License
+
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for the full license text.
 
 ---
 
@@ -621,4 +682,4 @@ Future sections such as vPC and multisite remain intentionally reserved and are 
 
 This project is a development and demonstration environment intended to illustrate Infrastructure as Code, NetDevOps, and VXLAN BGP EVPN automation concepts.
 
-The configuration should be reviewed and adapted before being used in a production environment.
+The configuration should be reviewed and validated in a test environment before being used in production.
