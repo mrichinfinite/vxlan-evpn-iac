@@ -37,24 +37,8 @@ jobs:
             ansible-galaxy collection install -r requirements.yml
           fi
 
-      - name: Check YAML syntax
-        run: |
-          python - <<'PY'
-          import pathlib
-          import yaml
-
-          files = list(pathlib.Path(".").rglob("*.yml"))
-          files += list(pathlib.Path(".").rglob("*.yaml"))
-
-          for path in files:
-              if ".git" in path.parts:
-                  continue
-
-              with path.open() as f:
-                  yaml.safe_load(f)
-
-              print(f"OK: {path}")
-          PY
+      - name: Run Ansible Lint
+        run: ansible-lint
 
       - name: Check Section 0 syntax
         run: |
