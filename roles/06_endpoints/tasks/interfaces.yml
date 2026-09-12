@@ -9,3 +9,23 @@
   loop: "{{ devices[inventory_hostname].endpoint_ports | default({}) | dict2items }}"
   loop_control:
     label: "{{ item.key }} -> {{ item.value.description }}"
+
+- name: Collect endpoint interface administrative state
+  cisco.nxos.nxos_command:
+    commands:
+      - "show running-config interface {{ item.key }}"
+  loop: "{{ devices[inventory_hostname].endpoint_ports | default({}) | dict2items }}"
+  loop_control:
+    label: "{{ inventory_hostname }} {{ item.key }}"
+  register: endpoint_interface_state
+
+- name: Enable endpoint interfaces
+  cisco.nxos.nxos_config:
+    parents:
+      - "interface {{ item.item.key }}"
+    lines:
+      - no shutdown
+  loop: "{{ endpoint_interface_state.results }}"
+  when: "'shutdown' in item.stdout[0]"
+  loop_control:
+    label: "{{ inventory_hostname }} {{ item.item.key }}"
