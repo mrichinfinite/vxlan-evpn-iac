@@ -595,14 +595,16 @@ vxlan-evpn-iac/
 │   │       ├── nve.yml
 │   │       ├── redistribution.yml
 │   │       ├── shared_vlan.yml
-│   │       ├── vrf_af.yml
-│   │       └── vrf.yml
+│   │       ├── vrf.yml
+│   │       └── vrf_af.yml
 │   │
 │   ├── 04_vpc/
-│   │   └── .gitkeep
+│   │   └── tasks/
+│   │       └── .gitkeep
 │   │
 │   ├── 05_multisite/
-│   │   └── .gitkeep
+│   │   └── tasks/
+│   │       └── .gitkeep
 │   │
 │   └── 06_endpoints/
 │       └── tasks/
@@ -618,12 +620,14 @@ vxlan-evpn-iac/
 │       ├── validate_overlay_l3.yml
 │       └── validate_underlay.yml
 │
+├── .ansible-lint
 ├── .gitignore
-├── ansible.cfg
+├── LICENSE
 ├── README.md
+├── SECURITY.md
+├── ansible.cfg
 ├── requirements.txt
-├── requirements.yml
-└── SECURITY.md
+└── requirements.yml
 ```
 
 ---

@@ -3,5 +3,6 @@
 ansible
 ansible-core
 ansible-pylibssh
+ansible-lint
 yamllint
 PyYAML
