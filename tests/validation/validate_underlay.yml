@@ -10,6 +10,38 @@
     - ../../data/topology.yml
 
   tasks:
+    - name: Collect underlay interface state
+      cisco.nxos.nxos_command:
+        commands:
+          - show running-config interface Ethernet1/1
+          - show running-config interface Ethernet1/2
+      register: underlay_interface_state
+
+    - name: Validate underlay interface state
+      ansible.builtin.assert:
+        that:
+          - >
+            (
+              inventory_hostname == "S-1"
+              and
+              "no shutdown" in underlay_interface_state.stdout[0]
+              and
+              "no shutdown" in underlay_interface_state.stdout[1]
+            )
+            or
+            (
+              inventory_hostname == "L-1"
+              and
+              "no shutdown" in underlay_interface_state.stdout[0]
+            )
+            or
+            (
+              inventory_hostname == "L-2"
+              and
+              "no shutdown" in underlay_interface_state.stdout[1]
+            )
+        fail_msg: "Underlay interface state validation failed on {{ inventory_hostname }}."
+        success_msg: "Underlay interface state validation passed on {{ inventory_hostname }}."
 
     - name: Collect OSPF neighbor state
       cisco.nxos.nxos_command:
@@ -100,7 +132,7 @@
           - show bgp l2vpn evpn summary
       register: bgp_evpn_summary
 
-    - name: Validate BGP EVPN peer count
+    - name: Validate BGP EVPN peers
       ansible.builtin.assert:
         that:
           - >

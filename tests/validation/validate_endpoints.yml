@@ -23,6 +23,7 @@
         that:
           - "'description ' ~ item.item.value.description in item.stdout[0]"
           - "'switchport access vlan ' ~ (item.item.value.access_vlan | string) in item.stdout[0]"
+          - "'shutdown' not in item.stdout[0]"
           - "'Operational Mode: access' in item.stdout[1]"
           - "'Access Mode VLAN: ' ~ (item.item.value.access_vlan | string) in item.stdout[1]"
         fail_msg: >-
