@@ -36,6 +36,12 @@ The reference environment consists of:
 
 ![VXLAN BGP EVPN topology](docs/vxlan-evpn-topology.png)
 
+## Demo
+
+See the [project demonstration video](docs/vxlan-evpn-iac-demo.mp4).
+
+The demo shows the project being deployed from a clean Cisco Modeling Labs (CML) environment, validated for correctness and idempotency, and then promoted through a GitHub-based change-management workflow.
+
 ## Lab
 
 The CML lab provides the development environment used to exercise the automation for this project. The infrastructure definition maintained by Ansible remains separate from the CML lab definition.
@@ -548,6 +554,7 @@ vxlan-evpn-iac/
 │   ├── architecture.md
 │   ├── change-governance.md
 │   ├── standards.md
+│   ├── vxlan-evpn-iac-demo.mp4
 │   └── vxlan-evpn-topology.png
 │
 ├── inventory/
