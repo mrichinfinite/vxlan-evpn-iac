@@ -38,9 +38,11 @@ The reference environment consists of:
 
 ## Demo
 
-See the [project demonstration video](docs/vxlan-evpn-iac-demo.mp4).
+Watch the [project demonstration video on YouTube](https://youtu.be/UEvfDotPmhM).
 
-The demo shows the project being deployed from a clean Cisco Modeling Labs (CML) environment, validated for correctness and idempotency, and then promoted through a GitHub-based change-management workflow.
+Or [download the MP4 directly from the repository](docs/vxlan-evpn-iac-demo.mp4).
+
+The demo video shows the project being deployed from a clean Cisco Modeling Labs (CML) environment, validated for correctness and idempotency, and then promoted through a GitHub-based change-management workflow.
 
 ## Lab
 
